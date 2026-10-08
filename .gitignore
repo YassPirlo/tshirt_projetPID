@@ -1,0 +1,18 @@
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Editeurs
+.idea/
+.vscode/
+
+# Frontend
+node_modules/
+dist/
+
+# Backend
+target/
+
+# Fichiers locaux
+.env
+*.log
