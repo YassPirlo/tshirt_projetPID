@@ -1,8 +1,12 @@
+
 package com.example.demo.repository;
 
 import com.example.demo.model.Produit;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// Donne automatiquement findAll(), findById(), save()... pour la table produit
+import java.util.List;
+
 public interface ProduitRepository extends JpaRepository<Produit, Long> {
+
+    List<Produit> findByCategorie_Id(Long categorieId);
 }
