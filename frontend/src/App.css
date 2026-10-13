@@ -1,107 +1,117 @@
-/* ===== TshirtShop : mise en page ===== */
+/* ===== TshirtShop : mise en page =====
+   Principe : un en-tête indigo collé en haut, un bandeau d'accroche à la
+   taille de son contenu, puis des tuiles en forme d'étiquette de vêtement. */
 
 /* ---------- Bandeau d'annonce ---------- */
 
 .annonce {
-  padding: 9px var(--marge);
+  padding: 8px var(--marge);
   background: var(--nuit);
   color: var(--blanc);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.02em;
   text-align: center;
 }
 
-/* ---------- Grand bandeau (hero) ---------- */
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
-  min-height: 78svh;
-  color: var(--blanc);
-  /* Fines côtes verticales, comme une maille de jersey, sur fond indigo */
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgb(255 255 255 / 0.045) 0 1px,
-      transparent 1px 5px
-    ),
-    linear-gradient(160deg, #2b4179 0%, var(--indigo) 45%, var(--nuit) 100%);
-}
-
-/* Pour utiliser une photo : placez-la dans public/hero.jpg puis remplacez
-   le fond ci-dessus par
-   background: linear-gradient(rgb(14 23 48 / 0.35), rgb(14 23 48 / 0.7)),
-     url('/hero.jpg') center / cover; */
-
-.hero--reduit {
-  flex: none;
-  min-height: 0;
-}
-
-.hero :focus-visible {
-  outline-color: var(--etiquette);
-}
-
 /* ---------- En-tête : nom du site + catégories ---------- */
 
 .entete {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 12px 48px;
-  padding: 22px var(--marge);
+  gap: 12px 40px;
+  padding-inline: max(var(--marge), (100% - 1440px) / 2);
+  background: var(--indigo);
+  color: var(--blanc);
+}
+
+.entete :focus-visible {
+  outline-color: var(--etiquette);
 }
 
 .marque {
-  font-size: 1.55rem;
+  flex: none;
+  padding: 18px 0;
+  border: 0;
+  background: none;
+  font-size: 1.5rem;
   font-weight: 900;
   font-stretch: 75%;
   line-height: 1;
   letter-spacing: -0.01em;
 }
 
+/* Sur petit écran, le menu défile horizontalement au lieu de passer
+   sur plusieurs lignes */
+.entete nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
 .entete nav ul {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 28px;
+  gap: 28px;
 }
 
 .entete nav button {
-  padding: 8px 0;
+  padding: 20px 0 17px;
   border: 0;
   border-bottom: 3px solid transparent;
   background: none;
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .entete nav button:hover {
-  border-bottom-color: rgb(255 255 255 / 0.6);
+  border-bottom-color: rgb(255 255 255 / 0.5);
 }
 
 .entete nav button[aria-pressed='true'] {
   border-bottom-color: var(--etiquette);
 }
 
-.entete nav p {
+.entete-attente {
   font-size: 0.95rem;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-/* ---------- Contenu du grand bandeau ---------- */
+/* ---------- Bandeau d'accroche (accueil) ---------- */
 
-.hero-contenu {
-  margin-top: auto;
-  padding: 48px var(--marge) clamp(40px, 8vh, 88px);
-  text-align: center;
+main {
+  flex: 1 0 auto;
 }
 
-.hero-contenu h2 {
-  max-width: 16ch;
-  margin-inline: auto;
-  font-size: clamp(2.8rem, 9vw, 7.5rem);
+.hero {
+  /* Le texte reste aligné sur le reste du site, même sur très grand écran */
+  padding-block: clamp(48px, 9vw, 112px) clamp(56px, 9vw, 104px);
+  padding-inline: max(var(--marge), (100% - 1440px) / 2);
+  color: var(--blanc);
+  /* Fines côtes verticales, comme une maille de jersey */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.045) 0 1px,
+      transparent 1px 5px
+    ),
+    linear-gradient(170deg, var(--indigo) 0%, var(--nuit) 100%);
+}
+
+.surtitre {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--etiquette);
+}
+
+.hero h1 {
+  margin-top: 16px;
+  font-size: clamp(2.8rem, 8.5vw, 7rem);
   font-weight: 800;
   font-stretch: 70%;
   line-height: 0.95;
@@ -114,120 +124,298 @@
   white-space: nowrap;
 }
 
-.hero-contenu > p {
-  margin-top: 20px;
+.hero-texte {
+  max-width: 44ch;
+  margin-top: 24px;
   font-size: 1.1rem;
+  opacity: 0.88;
 }
 
-.hero-contenu [role='alert'] {
+/* ---------- Conteneur commun des sections ---------- */
+
+.rayons,
+.rayon {
+  max-width: calc(1440px + 2 * var(--marge));
+  margin-inline: auto;
+  padding: clamp(40px, 6vw, 72px) var(--marge) 88px;
+}
+
+.rayons h2,
+.rayon h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* ---------- Tuiles des catégories (accueil) ---------- */
+
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+/* Chaque tuile rappelle une étiquette cartonnée : le petit trou rond
+   en haut à gauche est celui où passe l'attache. */
+.tuile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  width: 100%;
+  min-height: 200px;
+  padding: 56px 28px 24px;
+  border: 1px solid var(--trait);
+  border-radius: 4px;
+  background: var(--coton);
+  text-align: left;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.tuile::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 28px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--trait);
+  border-radius: 50%;
+  background: var(--blanc);
+}
+
+.tuile-nom {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  font-stretch: 80%;
+  line-height: 1.05;
+}
+
+.tuile-lien {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.tuile-lien::after {
+  content: ' →';
   display: inline-block;
-  padding: 10px 16px;
-  border: 2px solid var(--etiquette);
+  transition: transform 0.15s;
+}
+
+.tuile:hover {
+  border-color: var(--nuit);
+  background: var(--blanc);
+  transform: translateY(-2px);
+}
+
+.tuile:hover .tuile-lien::after {
+  transform: translateX(4px);
+}
+
+.tuile--attente {
+  min-height: 200px;
+  border-color: transparent;
+  animation: pulsation 1.2s ease-in-out infinite alternate;
+}
+
+.tuile--attente::before {
+  display: none;
+}
+
+/* ---------- Page d'une catégorie ---------- */
+
+.ariane ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 16px;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--gris);
+}
+
+.ariane li + li::before {
+  content: '/';
+  margin-right: 8px;
+}
+
+.ariane button {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ariane button:hover {
+  color: var(--nuit);
+}
+
+.rayon-titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin-bottom: 28px;
+}
+
+.compteur {
+  color: var(--gris);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Grille des produits ---------- */
+
+.grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 40px 20px;
+}
+
+.carte-image {
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
+  border-radius: 4px;
+  background: var(--coton);
+}
+
+.carte-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.carte:hover .carte-image img {
+  transform: scale(1.03);
+}
+
+/* Si l'image ne charge pas, on affiche le nom du produit à la place */
+.carte-sans-image {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 16px;
+  color: var(--gris);
+  font-weight: 600;
+  text-align: center;
+}
+
+.carte h3 {
+  margin-top: 14px;
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 32px;
+.prix {
+  margin-top: 2px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.hero-actions button {
-  min-width: 13rem;
-  padding: 14px 28px;
-  border: 2px solid var(--blanc);
+.carte--attente .carte-image,
+.carte-ligne {
+  animation: pulsation 1.2s ease-in-out infinite alternate;
+}
+
+.carte-ligne {
+  width: 60%;
+  height: 1rem;
+  margin-top: 14px;
   border-radius: 2px;
-  background: rgb(14 23 48 / 0.45);
-  font-size: 1rem;
+  background: var(--coton);
+}
+
+/* ---------- Messages (vide, erreur) ---------- */
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 60ch;
+  padding: 28px;
+  border: 1px dashed var(--trait);
+  border-radius: 4px;
+  color: var(--gris);
+}
+
+.message--erreur {
+  border: 1px solid var(--erreur);
+  border-left-width: 4px;
+  color: var(--nuit);
+  margin-top: 28px;
+}
+
+.bouton {
+  padding: 12px 22px;
+  border: 2px solid var(--nuit);
+  border-radius: 2px;
+  background: var(--nuit);
+  color: var(--blanc);
   font-weight: 700;
   transition:
     background-color 0.15s,
     color 0.15s;
 }
 
-.hero-actions button:hover {
+.bouton:hover {
   background: var(--blanc);
   color: var(--nuit);
-}
-
-/* ---------- Liste des produits ---------- */
-
-main {
-  width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
-}
-
-/* Sur l'accueil la zone produits est vide : elle ne prend pas de place */
-.hero--reduit + main {
-  flex: 1 0 auto;
-  padding: clamp(32px, 6vw, 64px) var(--marge) 80px;
-}
-
-main h2 {
-  margin-bottom: 28px;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  font-weight: 800;
-  font-stretch: 75%;
-  line-height: 1;
-  letter-spacing: -0.01em;
-}
-
-main section > p {
-  color: var(--gris);
-}
-
-.grille {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 36px 16px;
-}
-
-.grille img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  background: var(--coton);
-}
-
-.grille h3 {
-  margin-top: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.grille p {
-  color: var(--gris);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Pied de page ---------- */
 
 .pied {
-  padding: 20px var(--marge);
-  border-top: 1px solid var(--coton);
+  padding: 24px var(--marge);
+  border-top: 1px solid var(--trait);
   color: var(--gris);
   font-size: 0.85rem;
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes pulsation {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
 }
 
 /* ---------- Petits écrans ---------- */
 
 @media (max-width: 600px) {
-  .hero-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .entete {
+    gap: 20px;
   }
 
   .grille {
     grid-template-columns: repeat(2, 1fr);
-    gap: 28px 10px;
+    gap: 28px 12px;
+  }
+
+  .tuile {
+    min-height: 160px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-actions button {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

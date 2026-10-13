@@ -8,6 +8,8 @@
   --coton: #eef1f5; /* fond des vignettes produit */
   --gris: #586178; /* texte secondaire */
   --etiquette: #f5c518; /* accent, uniquement sur fond sombre */
+  --trait: #d5dbe5; /* bordures et séparateurs */
+  --erreur: #b3261e; /* messages d'erreur */
 
   /* Typographie : une seule famille, deux largeurs */
   --police: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
@@ -45,7 +47,8 @@ h1,
 h2,
 h3,
 p,
-ul {
+ul,
+ol {
   margin: 0;
 }
 
