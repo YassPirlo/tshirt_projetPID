@@ -61,80 +61,104 @@ function App() {
   }
 
   return (
-    <main>
-      <h1>TshirtShop</h1>
+    <>
+      <p className="annonce">
+        T-shirts pour femme et homme, dans toutes les tailles
+      </p>
 
-      <nav aria-label="Catégories">
-        <h2>Catégories</h2>
+      {/* Le bandeau est grand sur l'accueil, puis se réduit à l'en-tête
+          dès qu'une catégorie est choisie */}
+      <div className={categorieSelectionnee ? 'hero hero--reduit' : 'hero'}>
+        <header className="entete">
+          <h1 className="marque">TshirtShop</h1>
 
-        {chargement && <p>Chargement…</p>}
-        {erreur && <p role="alert">{erreur}</p>}
+          <nav aria-label="Catégories">
+            {chargement && <p>Chargement…</p>}
 
-        {!chargement && !erreur && (
+            {!chargement && !erreur && (
+              <ul>
+                {categories.map((categorie) => (
+                  <li key={categorie.id}>
+                    <button
+                      type="button"
+                      onClick={() => afficherProduits(categorie)}
+                      aria-pressed={categorieSelectionnee?.id === categorie.id}
+                    >
+                      {categorie.nom}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
+        </header>
 
-          <ul>
-            {categories.map((categorie) => (
-              <li key={categorie.id}>
-                <button
-                  type="button"
-                  onClick={() => afficherProduits(categorie)}
-                  aria-pressed={categorieSelectionnee?.id === categorie.id}
-                >
-                  {categorie.nom}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </nav>
+        {!categorieSelectionnee && (
+          <div className="hero-contenu">
+            <h2>
+              Trouvez le <span className="insecable">t-shirt</span> qui vous va
+            </h2>
+            {!erreur && (
+              <p>Choisissez une catégorie pour voir tous les modèles.</p>
+            )}
 
-      <section aria-live="polite">
-        {categorieSelectionnee && (
-          <h2>Produits : {categorieSelectionnee.nom}</h2>
-        )}
+            {erreur && <p role="alert">{erreur}</p>}
 
-        {chargementProduits && <p>Chargement des produits…</p>}
-
-        {erreurProduits && <p role="alert">{erreurProduits}</p>}
-
-        {categorieSelectionnee &&
-          !chargementProduits &&
-          !erreurProduits &&
-          produits.length === 0 && (
-            <p>Aucun produit disponible dans cette catégorie.</p>
-          )}
-
-        {!chargementProduits && !erreurProduits && produits.length > 0 && (
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-              gap: '20px',
-              maxWidth: '900px',
-            }}
-          >
-            {produits.map((produit) => (
-              <article key={produit.id}>
-                <img
-                  src={produit.imageUrl}
-                  alt={produit.nom}
-                  title={produit.nom}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '1 / 1',
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                  }}
-                />
-                <h3>{produit.nom}</h3>
-                <p>{produit.prix.toFixed(2)} €</p>
-              </article>
-            ))}
+            {!chargement && !erreur && (
+              <ul className="hero-actions">
+                {categories.slice(0, 3).map((categorie) => (
+                  <li key={categorie.id}>
+                    <button
+                      type="button"
+                      onClick={() => afficherProduits(categorie)}
+                    >
+                      Voir : {categorie.nom}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
-      </section>
-    </main>
+      </div>
+
+      <main>
+        <section aria-live="polite">
+          {categorieSelectionnee && <h2>{categorieSelectionnee.nom}</h2>}
+
+          {chargementProduits && <p>Chargement des produits…</p>}
+
+          {erreurProduits && <p role="alert">{erreurProduits}</p>}
+
+          {categorieSelectionnee &&
+            !chargementProduits &&
+            !erreurProduits &&
+            produits.length === 0 && (
+              <p>Aucun produit disponible dans cette catégorie.</p>
+            )}
+
+          {!chargementProduits && !erreurProduits && produits.length > 0 && (
+            <div className="grille">
+              {produits.map((produit) => (
+                <article key={produit.id}>
+                  <img
+                    src={produit.imageUrl}
+                    alt={produit.nom}
+                    title={produit.nom}
+                  />
+                  <h3>{produit.nom}</h3>
+                  <p>{produit.prix.toFixed(2)} €</p>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+
+      <footer className="pied">
+        <p>TshirtShop, projet d'école</p>
+      </footer>
+    </>
   )
 }
 
