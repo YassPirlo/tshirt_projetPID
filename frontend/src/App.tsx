@@ -1,24 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  getCategories,
+  getProduitsDeCategorie,
+  type Categorie,
+  type Produit,
+} from './api'
+import EnTete from './components/EnTete'
+import Accueil from './components/Accueil'
+import ListeProduits from './components/ListeProduits'
 import './App.css'
 
-type Categorie = {
-  id: number
-  nom: string
-}
-
-
-type Produit = {
-  id: number
-  nom: string
-  prix: number
-  imageUrl: string
-}
-
+// App garde l'état de la page et choisit quoi afficher.
+// L'affichage lui-même est dans les composants du dossier components.
 function App() {
   const [categories, setCategories] = useState<Categorie[]>([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
-
 
   const [categorieSelectionnee, setCategorieSelectionnee] =
     useState<Categorie | null>(null)
@@ -27,136 +24,87 @@ function App() {
   const [chargementProduits, setChargementProduits] = useState(false)
   const [erreurProduits, setErreurProduits] = useState<string | null>(null)
 
+  // Requête produits en cours : si on clique sur une autre catégorie avant
+  // la réponse, on l'annule pour ne pas afficher les produits de la mauvaise.
+  const requeteProduits = useRef<AbortController | null>(null)
+
   // US1 : au chargement de la page d'accueil, on récupère les catégories
   useEffect(() => {
-    fetch('http://localhost:8080/api/categories')
-      .then((reponse) => {
-        if (!reponse.ok) throw new Error('Erreur ' + reponse.status)
-        return reponse.json()
+    const controleur = new AbortController()
+
+    getCategories(controleur.signal)
+      .then((data) => setCategories(data))
+      .catch((e) => {
+        if (e.name !== 'AbortError')
+          setErreur('Impossible de charger les catégories.')
       })
-      .then((data: Categorie[]) => setCategories(data))
-      .catch(() => setErreur('Impossible de charger les catégories.'))
-      .finally(() => setChargement(false))
+      .finally(() => {
+        if (!controleur.signal.aborted) setChargement(false)
+      })
+
+    return () => controleur.abort()
   }, [])
 
-
+  // US2 : un clic sur une catégorie charge ses produits, sans recharger
   const afficherProduits = (categorie: Categorie) => {
+    requeteProduits.current?.abort()
+    const controleur = new AbortController()
+    requeteProduits.current = controleur
+
     setCategorieSelectionnee(categorie)
     setProduits([])
     setChargementProduits(true)
     setErreurProduits(null)
+    window.scrollTo({ top: 0 })
 
-    fetch(`http://localhost:8080/api/categories/${categorie.id}/produits`)
-      .then((reponse) => {
-        if (!reponse.ok) {
-          throw new Error('Erreur ' + reponse.status)
-        }
-        return reponse.json()
+    getProduitsDeCategorie(categorie.id, controleur.signal)
+      .then((data) => setProduits(data))
+      .catch((e) => {
+        if (e.name !== 'AbortError')
+          setErreurProduits('Impossible de charger les produits.')
       })
-      .then((data: Produit[]) => setProduits(data))
-      .catch(() =>
-        setErreurProduits('Impossible de charger les produits.')
-      )
-      .finally(() => setChargementProduits(false))
+      .finally(() => {
+        if (!controleur.signal.aborted) setChargementProduits(false)
+      })
+  }
+
+  const revenirAccueil = () => {
+    requeteProduits.current?.abort()
+    setCategorieSelectionnee(null)
+    window.scrollTo({ top: 0 })
   }
 
   return (
     <>
-      <p className="annonce">
-        T-shirts pour femme et homme, dans toutes les tailles
-      </p>
+      <EnTete
+        categories={categories}
+        chargement={chargement}
+        categorieActive={categorieSelectionnee}
+        onChoisir={afficherProduits}
+        onAccueil={revenirAccueil}
+      />
 
-      {/* Le bandeau est grand sur l'accueil, puis se réduit à l'en-tête
-          dès qu'une catégorie est choisie */}
-      <div className={categorieSelectionnee ? 'hero hero--reduit' : 'hero'}>
-        <header className="entete">
-          <h1 className="marque">TshirtShop</h1>
-
-          <nav aria-label="Catégories">
-            {chargement && <p>Chargement…</p>}
-
-            {!chargement && !erreur && (
-              <ul>
-                {categories.map((categorie) => (
-                  <li key={categorie.id}>
-                    <button
-                      type="button"
-                      onClick={() => afficherProduits(categorie)}
-                      aria-pressed={categorieSelectionnee?.id === categorie.id}
-                    >
-                      {categorie.nom}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </nav>
-        </header>
-
-        {!categorieSelectionnee && (
-          <div className="hero-contenu">
-            <h2>
-              Trouvez le <span className="insecable">t-shirt</span> qui vous va
-            </h2>
-            {!erreur && (
-              <p>Choisissez une catégorie pour voir tous les modèles.</p>
-            )}
-
-            {erreur && <p role="alert">{erreur}</p>}
-
-            {!chargement && !erreur && (
-              <ul className="hero-actions">
-                {categories.slice(0, 3).map((categorie) => (
-                  <li key={categorie.id}>
-                    <button
-                      type="button"
-                      onClick={() => afficherProduits(categorie)}
-                    >
-                      Voir : {categorie.nom}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+      <main className={categorieSelectionnee ? undefined : 'main--accueil'}>
+        {categorieSelectionnee ? (
+          <ListeProduits
+            categorie={categorieSelectionnee}
+            produits={produits}
+            chargement={chargementProduits}
+            erreur={erreurProduits}
+            onAccueil={revenirAccueil}
+          />
+        ) : (
+          <Accueil
+            categories={categories}
+            chargement={chargement}
+            erreur={erreur}
+            onChoisir={afficherProduits}
+          />
         )}
-      </div>
-
-      <main>
-        <section aria-live="polite">
-          {categorieSelectionnee && <h2>{categorieSelectionnee.nom}</h2>}
-
-          {chargementProduits && <p>Chargement des produits…</p>}
-
-          {erreurProduits && <p role="alert">{erreurProduits}</p>}
-
-          {categorieSelectionnee &&
-            !chargementProduits &&
-            !erreurProduits &&
-            produits.length === 0 && (
-              <p>Aucun produit disponible dans cette catégorie.</p>
-            )}
-
-          {!chargementProduits && !erreurProduits && produits.length > 0 && (
-            <div className="grille">
-              {produits.map((produit) => (
-                <article key={produit.id}>
-                  <img
-                    src={produit.imageUrl}
-                    alt={produit.nom}
-                    title={produit.nom}
-                  />
-                  <h3>{produit.nom}</h3>
-                  <p>{produit.prix.toFixed(2)} €</p>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
       </main>
 
       <footer className="pied">
-        <p>TshirtShop, projet d'école</p>
+        <p>TshirtShop, projet d'école 2026</p>
       </footer>
     </>
   )
