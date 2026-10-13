@@ -8,8 +8,9 @@ type Props = {
   onAccueil: () => void
 }
 
-// Barre du haut, toujours visible : le nom du site ramène à l'accueil,
-// les catégories servent de menu principal (US1).
+// Barre du haut, toujours visible : le nom du site ramène à l'accueil.
+// Le menu des catégories n'apparaît qu'en dehors de l'accueil, où la
+// grande liste des catégories joue déjà ce rôle.
 function EnTete({
   categories,
   chargement,
@@ -23,25 +24,27 @@ function EnTete({
         TshirtShop
       </button>
 
-      <nav aria-label="Catégories">
-        {chargement ? (
-          <p className="entete-attente">Chargement…</p>
-        ) : (
-          <ul>
-            {categories.map((categorie) => (
-              <li key={categorie.id}>
-                <button
-                  type="button"
-                  onClick={() => onChoisir(categorie)}
-                  aria-pressed={categorieActive?.id === categorie.id}
-                >
-                  {categorie.nom}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </nav>
+      {categorieActive && (
+        <nav aria-label="Catégories">
+          {chargement ? (
+            <p className="entete-attente">Chargement…</p>
+          ) : (
+            <ul>
+              {categories.map((categorie) => (
+                <li key={categorie.id}>
+                  <button
+                    type="button"
+                    onClick={() => onChoisir(categorie)}
+                    aria-pressed={categorieActive?.id === categorie.id}
+                  >
+                    {categorie.nom}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      )}
     </header>
   )
 }

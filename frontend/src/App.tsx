@@ -76,10 +76,6 @@ function App() {
 
   return (
     <>
-      <p className="annonce">
-        T-shirts pour femme et homme, dans toutes les tailles
-      </p>
-
       <EnTete
         categories={categories}
         chargement={chargement}
@@ -88,7 +84,7 @@ function App() {
         onAccueil={revenirAccueil}
       />
 
-      <main>
+      <main className={categorieSelectionnee ? undefined : 'main--accueil'}>
         {categorieSelectionnee ? (
           <ListeProduits
             categorie={categorieSelectionnee}
@@ -108,7 +104,7 @@ function App() {
       </main>
 
       <footer className="pied">
-        <p>© 2026 TshirtShop · Projet d'école</p>
+        <p>TshirtShop, projet d'école 2026</p>
       </footer>
     </>
   )

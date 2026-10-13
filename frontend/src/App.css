@@ -1,17 +1,28 @@
 /* ===== TshirtShop : mise en page =====
-   Principe : un en-tête indigo collé en haut, un bandeau d'accroche à la
-   taille de son contenu, puis des tuiles en forme d'étiquette de vêtement. */
+   Principe : sur l'accueil, la liste des catégories est écrite en très
+   grand sur un fond indigo à côtes de jersey, comme le panneau des rayons
+   d'un magasin. C'est le seul élément spectaculaire ; le reste du site
+   reste sobre pour laisser la place aux produits. */
 
-/* ---------- Bandeau d'annonce ---------- */
+/* Fond indigo à fines côtes verticales, comme une maille de jersey.
+   background-attachment: fixed raccorde l'en-tête et l'accueil. */
+:root {
+  --jersey:
+    repeating-linear-gradient(
+        90deg,
+        rgb(255 255 255 / 0.04) 0 1px,
+        transparent 1px 5px
+      )
+      fixed,
+    var(--indigo);
+}
 
-.annonce {
-  padding: 8px var(--marge);
-  background: var(--nuit);
-  color: var(--blanc);
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
+/* Les contenus s'alignent sur une même colonne de 1440px maximum */
+.entete,
+.accueil,
+.rayon,
+.pied {
+  padding-inline: max(var(--marge), (100% - 1440px) / 2);
 }
 
 /* ---------- En-tête : nom du site + catégories ---------- */
@@ -23,8 +34,7 @@
   display: flex;
   align-items: center;
   gap: 12px 40px;
-  padding-inline: max(var(--marge), (100% - 1440px) / 2);
-  background: var(--indigo);
+  background: var(--jersey);
   color: var(--blanc);
 }
 
@@ -80,164 +90,95 @@
   opacity: 0.75;
 }
 
-/* ---------- Bandeau d'accroche (accueil) ---------- */
+/* ---------- Accueil : la liste des rayons ---------- */
 
 main {
   flex: 1 0 auto;
 }
 
-.hero {
-  /* Le texte reste aligné sur le reste du site, même sur très grand écran */
-  padding-block: clamp(48px, 9vw, 112px) clamp(56px, 9vw, 104px);
-  padding-inline: max(var(--marge), (100% - 1440px) / 2);
-  color: var(--blanc);
-  /* Fines côtes verticales, comme une maille de jersey */
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgb(255 255 255 / 0.045) 0 1px,
-      transparent 1px 5px
-    ),
-    linear-gradient(170deg, var(--indigo) 0%, var(--nuit) 100%);
-}
-
-.surtitre {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--etiquette);
-}
-
-.hero h1 {
-  margin-top: 16px;
-  font-size: clamp(2.8rem, 8.5vw, 7rem);
-  font-weight: 800;
-  font-stretch: 70%;
-  line-height: 0.95;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-
-/* Empêche la coupure « t- / shirt » en fin de ligne */
-.insecable {
-  white-space: nowrap;
-}
-
-.hero-texte {
-  max-width: 44ch;
-  margin-top: 24px;
-  font-size: 1.1rem;
-  opacity: 0.88;
-}
-
-/* ---------- Conteneur commun des sections ---------- */
-
-.rayons,
-.rayon {
-  max-width: calc(1440px + 2 * var(--marge));
-  margin-inline: auto;
-  padding: clamp(40px, 6vw, 72px) var(--marge) 88px;
-}
-
-.rayons h2,
-.rayon h1 {
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  font-weight: 800;
-  font-stretch: 75%;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
-
-/* ---------- Tuiles des catégories (accueil) ---------- */
-
-.tuiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-top: 28px;
-}
-
-/* Chaque tuile rappelle une étiquette cartonnée : le petit trou rond
-   en haut à gauche est celui où passe l'attache. */
-.tuile {
-  position: relative;
+/* Sur l'accueil, le fond indigo descend jusqu'au pied de page */
+.main--accueil {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 40px;
+  color: var(--blanc);
+  background: var(--jersey);
+}
+
+.accueil {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: clamp(40px, 8vh, 80px);
+  padding-block: clamp(32px, 6vh, 64px) clamp(40px, 8vh, 88px);
+}
+
+.accueil :focus-visible {
+  outline-color: var(--etiquette);
+}
+
+.accueil h1 {
+  max-width: 32ch;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.35;
+  text-wrap: balance;
+  opacity: 0.85;
+}
+
+.accueil-attente {
+  opacity: 0.75;
+}
+
+.rayons {
+  border-top: 1px solid rgb(255 255 255 / 0.22);
+}
+
+.rayons li {
+  border-bottom: 1px solid rgb(255 255 255 / 0.22);
+}
+
+.rayons button {
+  display: block;
   width: 100%;
-  min-height: 200px;
-  padding: 56px 28px 24px;
-  border: 1px solid var(--trait);
-  border-radius: 4px;
-  background: var(--coton);
-  text-align: left;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s,
-    transform 0.15s;
-}
-
-.tuile::before {
-  content: '';
-  position: absolute;
-  top: 22px;
-  left: 28px;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--trait);
-  border-radius: 50%;
-  background: var(--blanc);
-}
-
-.tuile-nom {
-  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  padding: 0.12em 0 0.08em;
+  border: 0;
+  background: none;
+  font-size: clamp(2.6rem, 11.5vw, 8rem);
   font-weight: 800;
-  font-stretch: 80%;
-  line-height: 1.05;
+  font-stretch: 68%;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-align: left;
+  text-wrap: balance;
+  transition:
+    color 0.15s,
+    padding-left 0.2s;
 }
 
-.tuile-lien {
-  font-size: 0.95rem;
-  font-weight: 700;
+/* Le seul effet du site : le rayon survolé (ou atteint au clavier)
+   prend la couleur de l'étiquette et se décale légèrement */
+.rayons button:hover,
+.rayons button:focus-visible {
+  color: var(--etiquette);
+  padding-left: 0.12em;
 }
 
-.tuile-lien::after {
-  content: ' →';
-  display: inline-block;
-  transition: transform 0.15s;
-}
-
-.tuile:hover {
-  border-color: var(--nuit);
-  background: var(--blanc);
-  transform: translateY(-2px);
-}
-
-.tuile:hover .tuile-lien::after {
-  transform: translateX(4px);
-}
-
-.tuile--attente {
-  min-height: 200px;
-  border-color: transparent;
-  animation: pulsation 1.2s ease-in-out infinite alternate;
-}
-
-.tuile--attente::before {
-  display: none;
+.rayons button:focus-visible {
+  outline-offset: -3px;
 }
 
 /* ---------- Page d'une catégorie ---------- */
+
+.rayon {
+  padding-block: clamp(32px, 5vw, 56px) 88px;
+}
 
 .ariane ol {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 16px;
   padding: 0;
-  margin: 0 0 16px;
   list-style: none;
   font-size: 0.9rem;
   color: var(--gris);
@@ -265,7 +206,16 @@ main {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 8px 16px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+}
+
+.rayon h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 800;
+  font-stretch: 70%;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .compteur {
@@ -282,10 +232,8 @@ main {
 }
 
 .carte-image {
-  overflow: hidden;
   aspect-ratio: 4 / 5;
   max-width: 100%;
-  border-radius: 4px;
   background: var(--coton);
 }
 
@@ -293,11 +241,6 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.carte:hover .carte-image img {
-  transform: scale(1.03);
 }
 
 /* Si l'image ne charge pas, on affiche le nom du produit à la place */
@@ -323,6 +266,7 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+/* Blocs gris qui patientent pendant le chargement */
 .carte--attente .carte-image,
 .carte-ligne {
   animation: pulsation 1.2s ease-in-out infinite alternate;
@@ -332,7 +276,6 @@ main {
   width: 60%;
   height: 1rem;
   margin-top: 14px;
-  border-radius: 2px;
   background: var(--coton);
 }
 
@@ -344,29 +287,31 @@ main {
   align-items: flex-start;
   gap: 20px;
   max-width: 60ch;
-  padding: 28px;
-  border: 1px dashed var(--trait);
-  border-radius: 4px;
+  padding: 24px 28px;
+  border: 1px solid var(--trait);
   color: var(--gris);
 }
 
 .message--erreur {
-  border: 1px solid var(--erreur);
+  border-color: var(--erreur);
   border-left-width: 4px;
   color: var(--nuit);
-  margin-top: 28px;
+}
+
+/* Message d'erreur sur le fond indigo de l'accueil */
+.message--sombre {
+  border: 0;
+  border-left: 4px solid var(--etiquette);
+  background: rgb(14 23 48 / 0.5);
+  color: var(--blanc);
 }
 
 .bouton {
   padding: 12px 22px;
   border: 2px solid var(--nuit);
-  border-radius: 2px;
   background: var(--nuit);
   color: var(--blanc);
   font-weight: 700;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
 }
 
 .bouton:hover {
@@ -377,10 +322,17 @@ main {
 /* ---------- Pied de page ---------- */
 
 .pied {
-  padding: 24px var(--marge);
+  padding-block: 24px;
   border-top: 1px solid var(--trait);
   color: var(--gris);
   font-size: 0.85rem;
+}
+
+/* Sur l'accueil, le pied de page prolonge le fond indigo */
+.main--accueil + .pied {
+  border-top-color: var(--indigo);
+  background: var(--nuit);
+  color: rgb(255 255 255 / 0.7);
 }
 
 /* ---------- Animations ---------- */
@@ -404,10 +356,6 @@ main {
   .grille {
     grid-template-columns: repeat(2, 1fr);
     gap: 28px 12px;
-  }
-
-  .tuile {
-    min-height: 160px;
   }
 }
 
