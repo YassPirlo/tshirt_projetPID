@@ -1,233 +1,369 @@
-/* ===== TshirtShop : mise en page ===== */
+/* ===== TshirtShop : mise en page =====
+   Principe : sur l'accueil, la liste des catégories est écrite en très
+   grand sur un fond indigo à côtes de jersey, comme le panneau des rayons
+   d'un magasin. C'est le seul élément spectaculaire ; le reste du site
+   reste sobre pour laisser la place aux produits. */
 
-/* ---------- Bandeau d'annonce ---------- */
-
-.annonce {
-  padding: 9px var(--marge);
-  background: var(--nuit);
-  color: var(--blanc);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
-}
-
-/* ---------- Grand bandeau (hero) ---------- */
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
-  min-height: 78svh;
-  color: var(--blanc);
-  /* Fines côtes verticales, comme une maille de jersey, sur fond indigo */
-  background:
+/* Fond indigo à fines côtes verticales, comme une maille de jersey.
+   background-attachment: fixed raccorde l'en-tête et l'accueil. */
+:root {
+  --jersey:
     repeating-linear-gradient(
-      90deg,
-      rgb(255 255 255 / 0.045) 0 1px,
-      transparent 1px 5px
-    ),
-    linear-gradient(160deg, #2b4179 0%, var(--indigo) 45%, var(--nuit) 100%);
+        90deg,
+        rgb(255 255 255 / 0.04) 0 1px,
+        transparent 1px 5px
+      )
+      fixed,
+    var(--indigo);
 }
 
-/* Pour utiliser une photo : placez-la dans public/hero.jpg puis remplacez
-   le fond ci-dessus par
-   background: linear-gradient(rgb(14 23 48 / 0.35), rgb(14 23 48 / 0.7)),
-     url('/hero.jpg') center / cover; */
-
-.hero--reduit {
-  flex: none;
-  min-height: 0;
-}
-
-.hero :focus-visible {
-  outline-color: var(--etiquette);
+/* Les contenus s'alignent sur une même colonne de 1440px maximum */
+.entete,
+.accueil,
+.rayon,
+.pied {
+  padding-inline: max(var(--marge), (100% - 1440px) / 2);
 }
 
 /* ---------- En-tête : nom du site + catégories ---------- */
 
 .entete {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 12px 48px;
-  padding: 22px var(--marge);
+  gap: 12px 40px;
+  background: var(--jersey);
+  color: var(--blanc);
+}
+
+.entete :focus-visible {
+  outline-color: var(--etiquette);
 }
 
 .marque {
-  font-size: 1.55rem;
+  flex: none;
+  padding: 18px 0;
+  border: 0;
+  background: none;
+  font-size: 1.5rem;
   font-weight: 900;
   font-stretch: 75%;
   line-height: 1;
   letter-spacing: -0.01em;
 }
 
+/* Sur petit écran, le menu défile horizontalement au lieu de passer
+   sur plusieurs lignes */
+.entete nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
 .entete nav ul {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 28px;
+  gap: 28px;
 }
 
 .entete nav button {
-  padding: 8px 0;
+  padding: 20px 0 17px;
   border: 0;
   border-bottom: 3px solid transparent;
   background: none;
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .entete nav button:hover {
-  border-bottom-color: rgb(255 255 255 / 0.6);
+  border-bottom-color: rgb(255 255 255 / 0.5);
 }
 
 .entete nav button[aria-pressed='true'] {
   border-bottom-color: var(--etiquette);
 }
 
-.entete nav p {
+.entete-attente {
   font-size: 0.95rem;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-/* ---------- Contenu du grand bandeau ---------- */
+/* ---------- Accueil : la liste des rayons ---------- */
 
-.hero-contenu {
-  margin-top: auto;
-  padding: 48px var(--marge) clamp(40px, 8vh, 88px);
-  text-align: center;
+main {
+  flex: 1 0 auto;
 }
 
-.hero-contenu h2 {
-  max-width: 16ch;
-  margin-inline: auto;
-  font-size: clamp(2.8rem, 9vw, 7.5rem);
-  font-weight: 800;
-  font-stretch: 70%;
-  line-height: 0.95;
-  letter-spacing: -0.015em;
+/* Sur l'accueil, le fond indigo descend jusqu'au pied de page */
+.main--accueil {
+  display: flex;
+  flex-direction: column;
+  color: var(--blanc);
+  background: var(--jersey);
+}
+
+.accueil {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: clamp(40px, 8vh, 80px);
+  padding-block: clamp(32px, 6vh, 64px) clamp(40px, 8vh, 88px);
+}
+
+.accueil :focus-visible {
+  outline-color: var(--etiquette);
+}
+
+.accueil h1 {
+  max-width: 32ch;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.35;
   text-wrap: balance;
+  opacity: 0.85;
 }
 
-/* Empêche la coupure « t- / shirt » en fin de ligne */
-.insecable {
-  white-space: nowrap;
+.accueil-attente {
+  opacity: 0.75;
 }
 
-.hero-contenu > p {
-  margin-top: 20px;
-  font-size: 1.1rem;
+.rayons {
+  border-top: 1px solid rgb(255 255 255 / 0.22);
 }
 
-.hero-contenu [role='alert'] {
-  display: inline-block;
-  padding: 10px 16px;
-  border: 2px solid var(--etiquette);
-  font-weight: 600;
+.rayons li {
+  border-bottom: 1px solid rgb(255 255 255 / 0.22);
 }
 
-.hero-actions {
+.rayons button {
+  display: block;
+  width: 100%;
+  padding: 0.12em 0 0.08em;
+  border: 0;
+  background: none;
+  font-size: clamp(2.6rem, 11.5vw, 8rem);
+  font-weight: 800;
+  font-stretch: 68%;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-align: left;
+  text-wrap: balance;
+  transition:
+    color 0.15s,
+    padding-left 0.2s;
+}
+
+/* Le seul effet du site : le rayon survolé (ou atteint au clavier)
+   prend la couleur de l'étiquette et se décale légèrement */
+.rayons button:hover,
+.rayons button:focus-visible {
+  color: var(--etiquette);
+  padding-left: 0.12em;
+}
+
+.rayons button:focus-visible {
+  outline-offset: -3px;
+}
+
+/* ---------- Page d'une catégorie ---------- */
+
+.rayon {
+  padding-block: clamp(32px, 5vw, 56px) 88px;
+}
+
+.ariane ol {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--gris);
 }
 
-.hero-actions button {
-  min-width: 13rem;
-  padding: 14px 28px;
-  border: 2px solid var(--blanc);
-  border-radius: 2px;
-  background: rgb(14 23 48 / 0.45);
-  font-size: 1rem;
-  font-weight: 700;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
+.ariane li + li::before {
+  content: '/';
+  margin-right: 8px;
 }
 
-.hero-actions button:hover {
-  background: var(--blanc);
+.ariane button {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ariane button:hover {
   color: var(--nuit);
 }
 
-/* ---------- Liste des produits ---------- */
-
-main {
-  width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
+.rayon-titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin-bottom: 32px;
 }
 
-/* Sur l'accueil la zone produits est vide : elle ne prend pas de place */
-.hero--reduit + main {
-  flex: 1 0 auto;
-  padding: clamp(32px, 6vw, 64px) var(--marge) 80px;
-}
-
-main h2 {
-  margin-bottom: 28px;
-  font-size: clamp(2rem, 5vw, 3.4rem);
+.rayon h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
   font-weight: 800;
-  font-stretch: 75%;
+  font-stretch: 70%;
   line-height: 1;
   letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
-main section > p {
+.compteur {
   color: var(--gris);
+  font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Grille des produits ---------- */
 
 .grille {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 36px 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 40px 20px;
 }
 
-.grille img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+.carte-image {
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
   background: var(--coton);
 }
 
-.grille h3 {
-  margin-top: 12px;
+.carte-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Si l'image ne charge pas, on affiche le nom du produit à la place */
+.carte-sans-image {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 16px;
+  color: var(--gris);
+  font-weight: 600;
+  text-align: center;
+}
+
+.carte h3 {
+  margin-top: 14px;
   font-size: 1rem;
   font-weight: 600;
 }
 
-.grille p {
-  color: var(--gris);
+.prix {
+  margin-top: 2px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* Blocs gris qui patientent pendant le chargement */
+.carte--attente .carte-image,
+.carte-ligne {
+  animation: pulsation 1.2s ease-in-out infinite alternate;
+}
+
+.carte-ligne {
+  width: 60%;
+  height: 1rem;
+  margin-top: 14px;
+  background: var(--coton);
+}
+
+/* ---------- Messages (vide, erreur) ---------- */
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 60ch;
+  padding: 24px 28px;
+  border: 1px solid var(--trait);
+  color: var(--gris);
+}
+
+.message--erreur {
+  border-color: var(--erreur);
+  border-left-width: 4px;
+  color: var(--nuit);
+}
+
+/* Message d'erreur sur le fond indigo de l'accueil */
+.message--sombre {
+  border: 0;
+  border-left: 4px solid var(--etiquette);
+  background: rgb(14 23 48 / 0.5);
+  color: var(--blanc);
+}
+
+.bouton {
+  padding: 12px 22px;
+  border: 2px solid var(--nuit);
+  background: var(--nuit);
+  color: var(--blanc);
+  font-weight: 700;
+}
+
+.bouton:hover {
+  background: var(--blanc);
+  color: var(--nuit);
 }
 
 /* ---------- Pied de page ---------- */
 
 .pied {
-  padding: 20px var(--marge);
-  border-top: 1px solid var(--coton);
+  padding-block: 24px;
+  border-top: 1px solid var(--trait);
   color: var(--gris);
   font-size: 0.85rem;
+}
+
+/* Sur l'accueil, le pied de page prolonge le fond indigo */
+.main--accueil + .pied {
+  border-top-color: var(--indigo);
+  background: var(--nuit);
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes pulsation {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
 }
 
 /* ---------- Petits écrans ---------- */
 
 @media (max-width: 600px) {
-  .hero-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .entete {
+    gap: 20px;
   }
 
   .grille {
     grid-template-columns: repeat(2, 1fr);
-    gap: 28px 10px;
+    gap: 28px 12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-actions button {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
