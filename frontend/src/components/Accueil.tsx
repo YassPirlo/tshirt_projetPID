@@ -7,57 +7,37 @@ type Props = {
   onChoisir: (categorie: Categorie) => void
 }
 
-// Page d'accueil (US1) : un bandeau d'accroche, puis une tuile par catégorie.
+// Page d'accueil (US1) : la liste des catégories est le contenu principal,
+// écrite en très grand, comme le panneau des rayons d'un magasin.
 function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
   return (
-    <>
-      <section className="hero" aria-labelledby="titre-accueil">
-        <p className="surtitre">Femme · Homme · Toutes les tailles</p>
-        <h1 id="titre-accueil">
-          Trouvez le <span className="insecable">t-shirt</span> qui vous va
-        </h1>
-        <p className="hero-texte">
-          Des basiques en coton aux coupes ajustées : choisissez une catégorie
-          pour voir tous les modèles.
+    <section className="accueil" aria-labelledby="titre-accueil">
+      <h1 id="titre-accueil">
+        T-shirts pour femme et homme, dans toutes les tailles
+      </h1>
+
+      {erreur && (
+        <p className="message message--sombre" role="alert">
+          {erreur} Vérifiez que le serveur est démarré, puis rechargez la page.
         </p>
-      </section>
+      )}
 
-      <section className="rayons" aria-labelledby="titre-rayons">
-        <h2 id="titre-rayons">Nos catégories</h2>
+      {chargement && <p className="accueil-attente">Chargement…</p>}
 
-        {erreur && (
-          <p className="message message--erreur" role="alert">
-            {erreur} Vérifiez que le serveur est démarré, puis rechargez la
-            page.
-          </p>
-        )}
-
-        {chargement && (
-          <ul className="tuiles" aria-hidden="true">
-            {[1, 2, 3].map((n) => (
-              <li key={n} className="tuile tuile--attente" />
-            ))}
-          </ul>
-        )}
-
-        {!chargement && !erreur && (
-          <ul className="tuiles">
+      {!chargement && !erreur && (
+        <nav aria-label="Catégories">
+          <ul className="rayons">
             {categories.map((categorie) => (
               <li key={categorie.id}>
-                <button
-                  type="button"
-                  className="tuile"
-                  onClick={() => onChoisir(categorie)}
-                >
-                  <span className="tuile-nom">{categorie.nom}</span>
-                  <span className="tuile-lien">Voir les modèles</span>
+                <button type="button" onClick={() => onChoisir(categorie)}>
+                  {categorie.nom}
                 </button>
               </li>
             ))}
           </ul>
-        )}
-      </section>
-    </>
+        </nav>
+      )}
+    </section>
   )
 }
 
