@@ -7,37 +7,79 @@ type Props = {
   onChoisir: (categorie: Categorie) => void
 }
 
-// Page d'accueil (US1) : la liste des catégories est le contenu principal,
-// écrite en très grand, comme le panneau des rayons d'un magasin.
+// Image provisoire d'une catégorie, dans frontend/public/images.
+// La table categorie n'a pas encore de colonne image : en attendant,
+// on la choisit d'après le nom.
+function imageCategorie(nom: string) {
+  const n = nom.toLowerCase()
+  if (n.includes('slim')) return '/images/categorie-slim.svg'
+  if (n.includes('nouveaut')) return '/images/categorie-nouveautes.svg'
+  return '/images/categorie-classiques.svg'
+}
+
+// Page d'accueil (US1) : un grand visuel, puis les catégories en images.
 function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
+  const premiere = categories[0]
+
   return (
-    <section className="accueil" aria-labelledby="titre-accueil">
-      <h1 id="titre-accueil">
-        T-shirts pour femme et homme, dans toutes les tailles
-      </h1>
+    <>
+      <section className="bandeau" aria-labelledby="titre-accueil">
+        <img src="/images/bandeau.svg" alt="" />
+        <div className="bandeau-texte">
+          <h1 id="titre-accueil">Les essentiels en coton</h1>
+          <p>Des coupes classiques et ajustées, pour femme et homme.</p>
+          {premiere && (
+            <button
+              type="button"
+              className="bouton"
+              onClick={() => onChoisir(premiere)}
+            >
+              Découvrir : {premiere.nom}
+            </button>
+          )}
+        </div>
+      </section>
 
-      {erreur && (
-        <p className="message message--sombre" role="alert">
-          {erreur} Vérifiez que le serveur est démarré, puis rechargez la page.
-        </p>
-      )}
+      <section className="section" aria-labelledby="titre-categories">
+        <h2 id="titre-categories">Acheter par catégorie</h2>
 
-      {chargement && <p className="accueil-attente">Chargement…</p>}
+        {erreur && (
+          <p className="message message--erreur" role="alert">
+            {erreur} Vérifiez que le serveur est démarré, puis rechargez la
+            page.
+          </p>
+        )}
 
-      {!chargement && !erreur && (
-        <nav aria-label="Catégories">
-          <ul className="rayons">
+        {chargement && (
+          <ul className="categories" aria-hidden="true">
+            {[1, 2, 3].map((n) => (
+              <li key={n}>
+                <div className="vignette vignette--attente" />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!chargement && !erreur && (
+          <ul className="categories">
             {categories.map((categorie) => (
               <li key={categorie.id}>
-                <button type="button" onClick={() => onChoisir(categorie)}>
-                  {categorie.nom}
+                <button
+                  type="button"
+                  className="categorie"
+                  onClick={() => onChoisir(categorie)}
+                >
+                  <span className="vignette">
+                    <img src={imageCategorie(categorie.nom)} alt="" />
+                  </span>
+                  <span className="categorie-nom">{categorie.nom}</span>
                 </button>
               </li>
             ))}
           </ul>
-        </nav>
-      )}
-    </section>
+        )}
+      </section>
+    </>
   )
 }
 
