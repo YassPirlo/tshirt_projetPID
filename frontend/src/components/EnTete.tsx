@@ -1,4 +1,10 @@
 import type { Categorie } from '../api'
+import {
+  IconeCompte,
+  IconeFavoris,
+  IconePanier,
+  IconeRecherche,
+} from './Icones'
 
 type Props = {
   categories: Categorie[]
@@ -8,9 +14,17 @@ type Props = {
   onAccueil: () => void
 }
 
-// Barre du haut, toujours visible : le nom du site ramène à l'accueil.
-// Le menu des catégories n'apparaît qu'en dehors de l'accueil, où la
-// grande liste des catégories joue déjà ce rôle.
+// Les actions de droite seront branchées plus tard :
+// compte (US4 à US7) et panier (US8, US9).
+const actions = [
+  { nom: 'Rechercher', Icone: IconeRecherche },
+  { nom: 'Mon compte', Icone: IconeCompte },
+  { nom: 'Favoris', Icone: IconeFavoris },
+  { nom: 'Panier', Icone: IconePanier },
+]
+
+// En-tête classique de boutique : logo à gauche, catégories au centre
+// (US1), actions à droite.
 function EnTete({
   categories,
   chargement,
@@ -20,31 +34,44 @@ function EnTete({
 }: Props) {
   return (
     <header className="entete">
-      <button type="button" className="marque" onClick={onAccueil}>
+      <button type="button" className="logo" onClick={onAccueil}>
         TshirtShop
       </button>
 
-      {categorieActive && (
-        <nav aria-label="Catégories">
-          {chargement ? (
-            <p className="entete-attente">Chargement…</p>
-          ) : (
-            <ul>
-              {categories.map((categorie) => (
-                <li key={categorie.id}>
-                  <button
-                    type="button"
-                    onClick={() => onChoisir(categorie)}
-                    aria-pressed={categorieActive?.id === categorie.id}
-                  >
-                    {categorie.nom}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
-      )}
+      <nav aria-label="Catégories" className="entete-menu">
+        {chargement ? (
+          <p className="entete-attente">Chargement…</p>
+        ) : (
+          <ul>
+            {categories.map((categorie) => (
+              <li key={categorie.id}>
+                <button
+                  type="button"
+                  onClick={() => onChoisir(categorie)}
+                  aria-pressed={categorieActive?.id === categorie.id}
+                >
+                  {categorie.nom}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </nav>
+
+      <ul className="entete-actions">
+        {actions.map(({ nom, Icone }) => (
+          <li key={nom}>
+            <button
+              type="button"
+              aria-label={nom}
+              aria-disabled="true"
+              title={nom + ' (bientôt disponible)'}
+            >
+              <Icone />
+            </button>
+          </li>
+        ))}
+      </ul>
     </header>
   )
 }
