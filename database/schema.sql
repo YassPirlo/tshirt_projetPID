@@ -41,7 +41,7 @@ INSERT INTO categorie (nom) VALUES ('T-shirts classiques'), ('T-shirts slim'), (
 INSERT INTO marque (nom) VALUES ('Nike'), ('Adidas'), ('Puma');
 
 INSERT INTO produit (nom, prix, image_url, categorie_id, marque_id) VALUES
-  ('T-shirt blanc', 19.99, 'https://placehold.co/300x300?text=T-shirt+blanc', 1, 1),
-  ('T-shirt noir', 19.99, 'https://placehold.co/300x300?text=T-shirt+noir', 1, 2),
-  ('T-shirt bleu', 21.99, 'https://placehold.co/300x300?text=T-shirt+bleu', 1, 3),
-  ('T-shirt gris slim', 24.99, 'https://placehold.co/300x300?text=T-shirt+gris', 2, 3);
+  ('T-shirt blanc', 19.99, '/images/tshirt-blanc.svg', 1, 1),
+  ('T-shirt noir', 19.99, '/images/tshirt-noir.svg', 1, 2),
+  ('T-shirt bleu', 21.99, '/images/tshirt-bleu.svg', 1, 3),
+  ('T-shirt gris slim', 24.99, '/images/tshirt-gris.svg', 2, 3);

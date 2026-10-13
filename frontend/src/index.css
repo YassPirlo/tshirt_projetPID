@@ -1,27 +1,26 @@
 /* ===== Base du site : couleurs, typographie, remise à zéro ===== */
 
 :root {
-  /* Couleurs */
-  --nuit: #0e1730; /* bandeau d'annonce, texte principal */
-  --indigo: #1b2a4e; /* fond du grand bandeau */
+  /* Couleurs : noir et blanc, comme la plupart des boutiques de vêtements.
+     Les couleurs viennent des photos des produits. */
+  --encre: #111111; /* texte principal, en-tête, boutons */
   --blanc: #ffffff; /* fond de page */
-  --coton: #eef1f5; /* fond des vignettes produit */
-  --gris: #586178; /* texte secondaire */
-  --etiquette: #f5c518; /* accent, uniquement sur fond sombre */
-  --trait: #d5dbe5; /* bordures et séparateurs */
+  --fond-produit: #efeeeb; /* fond des photos produit */
+  --gris: #6b6b6b; /* texte secondaire */
+  --trait: #e3e3e0; /* bordures et séparateurs */
   --erreur: #b3261e; /* messages d'erreur */
 
-  /* Typographie : une seule famille, deux largeurs */
-  --police: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  /* Typographie : une seule famille, proche des polices des marques de sport */
+  --police: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
 
   /* Marge latérale commune à tout le site */
-  --marge: clamp(16px, 4vw, 48px);
+  --marge: clamp(16px, 3vw, 40px);
 
   color-scheme: light;
   font-family: var(--police);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
-  color: var(--nuit);
+  color: var(--encre);
   background: var(--blanc);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -70,6 +69,6 @@ button {
 
 /* Focus clavier toujours visible */
 :focus-visible {
-  outline: 3px solid var(--indigo);
+  outline: 2px solid var(--encre);
   outline-offset: 3px;
 }

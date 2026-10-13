@@ -1,9 +1,12 @@
 // Tout ce qui parle au back-end est regroupé ici : les types renvoyés par
 // l'API et les fonctions d'appel. Les composants n'écrivent jamais d'URL.
 
-// L'adresse du back peut être changée dans un fichier .env
-// (VITE_API_URL=http://...) sans toucher au code.
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+// Par défaut, les appels partent vers /api sur le serveur Vite, qui les
+// transmet au back (voir le proxy dans vite.config.ts). Le navigateur ne
+// parle qu'à une seule adresse : pas de blocage CORS, même si le site est
+// ouvert via 127.0.0.1 ou si Vite démarre sur un autre port que 5173.
+// Pour viser un autre back, définir VITE_API_URL dans un fichier .env.
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 export type Categorie = {
   id: number

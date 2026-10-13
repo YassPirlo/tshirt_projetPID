@@ -92,7 +92,9 @@ function CarteProduit({ produit }: { produit: Produit }) {
     <article className="carte">
       <div className="carte-image">
         {imageCassee || !produit.imageUrl ? (
-          <span className="carte-sans-image" title={produit.nom}>{produit.nom}</span>
+          <span className="carte-sans-image" title={produit.nom}>
+            {produit.nom}
+          </span>
         ) : (
           <img
             src={produit.imageUrl}
