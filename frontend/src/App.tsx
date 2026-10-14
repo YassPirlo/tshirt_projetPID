@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   getCategories,
+  getProduit,
   getProduitsDeCategorie,
   type Categorie,
   type Produit,
@@ -8,6 +9,7 @@ import {
 import EnTete from './components/EnTete'
 import Accueil from './components/Accueil'
 import ListeProduits from './components/ListeProduits'
+import FicheProduit from './components/FicheProduit'
 import './App.css'
 
 // App garde l'état de la page et choisit quoi afficher.
@@ -24,9 +26,16 @@ function App() {
   const [chargementProduits, setChargementProduits] = useState(false)
   const [erreurProduits, setErreurProduits] = useState<string | null>(null)
 
-  // Requête produits en cours : si on clique sur une autre catégorie avant
-  // la réponse, on l'annule pour ne pas afficher les produits de la mauvaise.
+  // US3 : produit dont on affiche le détail (null = on affiche la liste)
+  const [produitOuvertId, setProduitOuvertId] = useState<number | null>(null)
+  const [produit, setProduit] = useState<Produit | null>(null)
+  const [chargementProduit, setChargementProduit] = useState(false)
+  const [erreurProduit, setErreurProduit] = useState<string | null>(null)
+
+  // Requêtes en cours : si on clique ailleurs avant la réponse, on les
+  // annule pour ne pas afficher les données de la mauvaise page.
   const requeteProduits = useRef<AbortController | null>(null)
+  const requeteProduit = useRef<AbortController | null>(null)
 
   // US1 : au chargement de la page d'accueil, on récupère les catégories
   useEffect(() => {
@@ -47,6 +56,7 @@ function App() {
 
   // US2 : un clic sur une catégorie charge ses produits, sans recharger
   const afficherProduits = (categorie: Categorie) => {
+    fermerProduit()
     requeteProduits.current?.abort()
     const controleur = new AbortController()
     requeteProduits.current = controleur
@@ -68,10 +78,40 @@ function App() {
       })
   }
 
+  // US3 : un clic sur un produit charge son détail, sans recharger
+  const afficherProduit = (choisi: Produit) => {
+    requeteProduit.current?.abort()
+    const controleur = new AbortController()
+    requeteProduit.current = controleur
+
+    setProduitOuvertId(choisi.id)
+    setProduit(null)
+    setChargementProduit(true)
+    setErreurProduit(null)
+    window.scrollTo({ top: 0 })
+
+    getProduit(choisi.id, controleur.signal)
+      .then((data) => setProduit(data))
+      .catch((e) => {
+        if (e.name !== 'AbortError')
+          setErreurProduit('Impossible de charger ce produit.')
+      })
+      .finally(() => {
+        if (!controleur.signal.aborted) setChargementProduit(false)
+      })
+  }
+
+  // Retour à la liste de la catégorie (elle est encore en mémoire)
+  const fermerProduit = () => {
+    requeteProduit.current?.abort()
+    setProduitOuvertId(null)
+    window.scrollTo({ top: 0 })
+  }
+
   const revenirAccueil = () => {
+    fermerProduit()
     requeteProduits.current?.abort()
     setCategorieSelectionnee(null)
-    window.scrollTo({ top: 0 })
   }
 
   return (
@@ -89,13 +129,24 @@ function App() {
       />
 
       <main>
-        {categorieSelectionnee ? (
+        {categorieSelectionnee && produitOuvertId !== null ? (
+          <FicheProduit
+            key={produitOuvertId}
+            categorie={categorieSelectionnee}
+            produit={produit}
+            chargement={chargementProduit}
+            erreur={erreurProduit}
+            onAccueil={revenirAccueil}
+            onRetour={fermerProduit}
+          />
+        ) : categorieSelectionnee ? (
           <ListeProduits
             categorie={categorieSelectionnee}
             produits={produits}
             chargement={chargementProduits}
             erreur={erreurProduits}
             onAccueil={revenirAccueil}
+            onOuvrirProduit={afficherProduit}
           />
         ) : (
           <Accueil

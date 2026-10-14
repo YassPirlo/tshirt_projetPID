@@ -13,11 +13,17 @@ export type Categorie = {
   nom: string
 }
 
+export type Marque = {
+  id: number
+  nom: string
+}
+
 export type Produit = {
   id: number
   nom: string
   prix: number
   imageUrl: string
+  marque: Marque
 }
 
 // Lit une réponse JSON et lève une erreur si le serveur répond 4xx ou 5xx.
@@ -35,6 +41,10 @@ export const getCategories = (signal?: AbortSignal) =>
 // US2
 export const getProduitsDeCategorie = (id: number, signal?: AbortSignal) =>
   lireJson<Produit[]>(`/api/categories/${id}/produits`, signal)
+
+// US3
+export const getProduit = (id: number, signal?: AbortSignal) =>
+  lireJson<Produit>(`/api/produits/${id}`, signal)
 
 // Prix à la française : « 19,99 € » et non « 19.99 € »
 const formatEuro = new Intl.NumberFormat('fr-FR', {
