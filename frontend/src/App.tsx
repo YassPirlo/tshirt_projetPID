@@ -148,11 +148,29 @@ function App() {
     setCategorieSelectionnee(null)
   }
 
+  // Accessibilité : à chaque changement de page, le focus va au début du
+  // contenu. Sinon, le bouton cliqué disparaît et un utilisateur au
+  // clavier ou au lecteur d'écran ne sait plus où il se trouve.
+  const contenu = useRef<HTMLElement>(null)
+  const vue = `${pageInfo}|${categorieSelectionnee?.id}|${produitOuvertId}`
+  const vuePrecedente = useRef(vue)
+  useEffect(() => {
+    if (vuePrecedente.current === vue) return // premier affichage
+    vuePrecedente.current = vue
+    contenu.current?.focus()
+  }, [vue])
+
   return (
     <>
-      <p className="annonce">
-        T-shirts pour femme et homme, dans toutes les tailles
-      </p>
+      {/* Lien d'évitement : premier élément atteint avec Tab, il permet
+          de sauter l'en-tête et le menu */}
+      <a className="lien-evitement" href="#contenu">
+        Aller au contenu
+      </a>
+
+      <section className="annonce" aria-label="Annonce">
+        <p>T-shirts pour femme et homme, dans toutes les tailles</p>
+      </section>
 
       <EnTete
         categories={categories}
@@ -162,7 +180,7 @@ function App() {
         onAccueil={revenirAccueil}
       />
 
-      <main>
+      <main id="contenu" ref={contenu} tabIndex={-1}>
         {pageInfo === 'mentions' ? (
           <MentionsLegales
             onAccueil={revenirAccueil}
