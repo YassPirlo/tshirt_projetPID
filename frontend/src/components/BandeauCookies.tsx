@@ -27,7 +27,7 @@ function BandeauCookies({
           TshirtShop utilise uniquement ce qui est nécessaire au fonctionnement
           du site. Avec votre accord, nous pourrons aussi mesurer la
           fréquentation pour améliorer la boutique. Vous pouvez changer d'avis à
-          tout moment avec le lien « Gérer les cookies » en bas de page.{' '}
+          tout moment avec le lien «&nbsp;Gérer les cookies&nbsp;» en bas de page.{' '}
           <button type="button" className="lien" onClick={onEnSavoirPlus}>
             En savoir plus
           </button>
