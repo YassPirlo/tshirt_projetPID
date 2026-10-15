@@ -405,6 +405,178 @@ main {
   font-size: 1.3rem;
 }
 
+.pied-liens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.pied-liens button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blanc);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pied :focus-visible {
+  outline-color: var(--blanc);
+}
+
+/* ---------- Bouton secondaire et lien dans le texte ---------- */
+
+.bouton--secondaire {
+  background: var(--blanc);
+  color: var(--encre);
+}
+
+.bouton--secondaire:hover {
+  background: var(--fond-produit);
+}
+
+.lien {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Pages Confidentialité et Cookies ---------- */
+
+.page-texte {
+  max-width: calc(68ch + 2 * var(--marge));
+  margin-inline: auto;
+  padding: clamp(32px, 5vw, 56px) var(--marge) 72px;
+}
+
+.page-texte h1 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.page-texte-date {
+  margin-top: 4px;
+  color: var(--gris);
+  font-size: 0.875rem;
+}
+
+.page-texte h2 {
+  margin: 32px 0 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.page-texte p + p {
+  margin-top: 12px;
+}
+
+.page-texte a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.page-texte .bouton {
+  margin-top: 16px;
+}
+
+/* Un tableau trop large défile seul, sans élargir la page */
+.tableau-defilant {
+  overflow-x: auto;
+  margin-block: 8px 12px;
+}
+
+.tableau-defilant table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tableau-defilant th,
+.tableau-defilant td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--trait);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tableau-defilant th {
+  background: var(--fond-produit);
+  font-weight: 600;
+}
+
+/* ---------- Bandeau des cookies ---------- */
+
+.cookies {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 20px var(--marge) calc(20px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--trait);
+  background: var(--blanc);
+  box-shadow: 0 -4px 24px rgb(0 0 0 / 0.08);
+}
+
+.cookies-contenu {
+  flex: 1 1 32rem;
+  max-width: 72ch;
+}
+
+.cookies h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cookies p {
+  margin-top: 4px;
+  color: var(--gris);
+  font-size: 0.95rem;
+}
+
+.cookies-choix {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--trait);
+}
+
+.cookies-choix legend {
+  padding-inline: 4px;
+  font-weight: 600;
+}
+
+.cookies-choix label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.cookies-choix input {
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  accent-color: var(--encre);
+}
+
+.cookies-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* ---------- Animations ---------- */
 
 @keyframes pulsation {
@@ -451,6 +623,13 @@ main {
   .grille {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px 8px;
+  }
+
+  /* Bandeau cookies : les trois boutons prennent toute la largeur,
+     refuser reste aussi visible qu'accepter */
+  .cookies-actions {
+    flex-direction: column;
+    width: 100%;
   }
 
   .fiche-contenu {
