@@ -157,7 +157,9 @@ function App() {
   useEffect(() => {
     if (vuePrecedente.current === vue) return // premier affichage
     vuePrecedente.current = vue
-    contenu.current?.focus()
+    // preventScroll : la page est déjà remontée en haut, le focus ne doit
+    // pas la faire défiler sous l'en-tête collé en haut
+    contenu.current?.focus({ preventScroll: true })
   }, [vue])
 
   return (
@@ -175,7 +177,8 @@ function App() {
       <EnTete
         categories={categories}
         chargement={chargement}
-        categorieActive={categorieSelectionnee}
+        // Sur une page d'information, aucune catégorie n'est soulignée
+        categorieActive={pageInfo ? null : categorieSelectionnee}
         onChoisir={afficherProduits}
         onAccueil={revenirAccueil}
       />
