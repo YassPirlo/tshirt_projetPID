@@ -13,12 +13,15 @@ import FicheProduit from './components/FicheProduit'
 import BandeauCookies from './components/BandeauCookies'
 import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
 import PolitiqueCookies from './components/PolitiqueCookies'
+import MentionsLegales from './components/MentionsLegales'
 import {
   enregistrerConsentement,
   lireConsentement,
   type Consentement,
 } from './consentement'
 import './App.css'
+
+type PageInfo = 'mentions' | 'confidentialite' | 'cookies'
 
 // App garde l'état de la page et choisit quoi afficher.
 // L'affichage lui-même est dans les composants du dossier components.
@@ -40,10 +43,8 @@ function App() {
   const [chargementProduit, setChargementProduit] = useState(false)
   const [erreurProduit, setErreurProduit] = useState<string | null>(null)
 
-  // RGPD : page d'information affichée (null = la boutique)
-  const [pageInfo, setPageInfo] = useState<
-    'confidentialite' | 'cookies' | null
-  >(null)
+  // Page d'information affichée (null = la boutique)
+  const [pageInfo, setPageInfo] = useState<PageInfo | null>(null)
 
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
@@ -58,7 +59,7 @@ function App() {
     setBandeauRouvert(false)
   }
 
-  const ouvrirPageInfo = (page: 'confidentialite' | 'cookies') => {
+  const ouvrirPageInfo = (page: PageInfo) => {
     setPageInfo(page)
     window.scrollTo({ top: 0 })
   }
@@ -147,22 +148,49 @@ function App() {
     setCategorieSelectionnee(null)
   }
 
+  // Accessibilité : à chaque changement de page, le focus va au début du
+  // contenu. Sinon, le bouton cliqué disparaît et un utilisateur au
+  // clavier ou au lecteur d'écran ne sait plus où il se trouve.
+  const contenu = useRef<HTMLElement>(null)
+  const vue = `${pageInfo}|${categorieSelectionnee?.id}|${produitOuvertId}`
+  const vuePrecedente = useRef(vue)
+  useEffect(() => {
+    if (vuePrecedente.current === vue) return // premier affichage
+    vuePrecedente.current = vue
+    // preventScroll : la page est déjà remontée en haut, le focus ne doit
+    // pas la faire défiler sous l'en-tête collé en haut
+    contenu.current?.focus({ preventScroll: true })
+  }, [vue])
+
   return (
     <>
-      <p className="annonce">
-        T-shirts pour femme et homme, dans toutes les tailles
-      </p>
+      {/* Lien d'évitement : premier élément atteint avec Tab, il permet
+          de sauter l'en-tête et le menu */}
+      <a className="lien-evitement" href="#contenu">
+        Aller au contenu
+      </a>
+
+      <section className="annonce" aria-label="Annonce">
+        <p>T-shirts pour femme et homme, dans toutes les tailles</p>
+      </section>
 
       <EnTete
         categories={categories}
         chargement={chargement}
-        categorieActive={categorieSelectionnee}
+        // Sur une page d'information, aucune catégorie n'est soulignée
+        categorieActive={pageInfo ? null : categorieSelectionnee}
         onChoisir={afficherProduits}
         onAccueil={revenirAccueil}
       />
 
-      <main>
-        {pageInfo === 'confidentialite' ? (
+      <main id="contenu" ref={contenu} tabIndex={-1}>
+        {pageInfo === 'mentions' ? (
+          <MentionsLegales
+            onAccueil={revenirAccueil}
+            onConfidentialite={() => ouvrirPageInfo('confidentialite')}
+            onCookies={() => ouvrirPageInfo('cookies')}
+          />
+        ) : pageInfo === 'confidentialite' ? (
           <PolitiqueConfidentialite
             onAccueil={revenirAccueil}
             onCookies={() => ouvrirPageInfo('cookies')}
@@ -206,6 +234,11 @@ function App() {
         <p className="logo">TshirtShop</p>
         <nav aria-label="Informations légales">
           <ul className="pied-liens">
+            <li>
+              <button type="button" onClick={() => ouvrirPageInfo('mentions')}>
+                Mentions légales
+              </button>
+            </li>
             <li>
               <button
                 type="button"

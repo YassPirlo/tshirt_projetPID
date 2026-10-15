@@ -3,6 +3,32 @@
    sur l'accueil, puis des photos sur fond clair. Le texte reste petit et
    sobre, ce sont les images qui attirent l'oeil. */
 
+/* ---------- Lien d'évitement (accessibilité) ----------
+   Caché hors de l'écran, il apparaît en haut à gauche quand on arrive
+   dessus avec la touche Tab. */
+
+.lien-evitement {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 30;
+  padding: 10px 16px;
+  background: var(--blanc);
+  color: var(--encre);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.lien-evitement:focus {
+  transform: none;
+}
+
+/* Le contenu reçoit le focus à chaque changement de page : pas de
+   contour autour de toute la zone, le lecteur d'écran suffit */
+main:focus {
+  outline: none;
+}
+
 /* ---------- Bandeau d'annonce ---------- */
 
 .annonce {
