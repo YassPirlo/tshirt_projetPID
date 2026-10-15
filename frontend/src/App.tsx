@@ -13,12 +13,15 @@ import FicheProduit from './components/FicheProduit'
 import BandeauCookies from './components/BandeauCookies'
 import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
 import PolitiqueCookies from './components/PolitiqueCookies'
+import MentionsLegales from './components/MentionsLegales'
 import {
   enregistrerConsentement,
   lireConsentement,
   type Consentement,
 } from './consentement'
 import './App.css'
+
+type PageInfo = 'mentions' | 'confidentialite' | 'cookies'
 
 // App garde l'état de la page et choisit quoi afficher.
 // L'affichage lui-même est dans les composants du dossier components.
@@ -40,10 +43,8 @@ function App() {
   const [chargementProduit, setChargementProduit] = useState(false)
   const [erreurProduit, setErreurProduit] = useState<string | null>(null)
 
-  // RGPD : page d'information affichée (null = la boutique)
-  const [pageInfo, setPageInfo] = useState<
-    'confidentialite' | 'cookies' | null
-  >(null)
+  // Page d'information affichée (null = la boutique)
+  const [pageInfo, setPageInfo] = useState<PageInfo | null>(null)
 
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
@@ -58,7 +59,7 @@ function App() {
     setBandeauRouvert(false)
   }
 
-  const ouvrirPageInfo = (page: 'confidentialite' | 'cookies') => {
+  const ouvrirPageInfo = (page: PageInfo) => {
     setPageInfo(page)
     window.scrollTo({ top: 0 })
   }
@@ -162,7 +163,13 @@ function App() {
       />
 
       <main>
-        {pageInfo === 'confidentialite' ? (
+        {pageInfo === 'mentions' ? (
+          <MentionsLegales
+            onAccueil={revenirAccueil}
+            onConfidentialite={() => ouvrirPageInfo('confidentialite')}
+            onCookies={() => ouvrirPageInfo('cookies')}
+          />
+        ) : pageInfo === 'confidentialite' ? (
           <PolitiqueConfidentialite
             onAccueil={revenirAccueil}
             onCookies={() => ouvrirPageInfo('cookies')}
@@ -206,6 +213,11 @@ function App() {
         <p className="logo">TshirtShop</p>
         <nav aria-label="Informations légales">
           <ul className="pied-liens">
+            <li>
+              <button type="button" onClick={() => ouvrirPageInfo('mentions')}>
+                Mentions légales
+              </button>
+            </li>
             <li>
               <button
                 type="button"
