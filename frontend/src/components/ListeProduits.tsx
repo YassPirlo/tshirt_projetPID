@@ -7,6 +7,7 @@ type Props = {
   chargement: boolean
   erreur: string | null
   onAccueil: () => void
+  onOuvrirProduit: (produit: Produit) => void
 }
 
 // Produits d'une catégorie en miniatures (US2)
@@ -16,6 +17,7 @@ function ListeProduits({
   chargement,
   erreur,
   onAccueil,
+  onOuvrirProduit,
 }: Props) {
   return (
     <section className="rayon" aria-labelledby="titre-rayon">
@@ -73,7 +75,7 @@ function ListeProduits({
           <ul className="grille">
             {produits.map((produit) => (
               <li key={produit.id}>
-                <CarteProduit produit={produit} />
+                <CarteProduit produit={produit} onOuvrir={onOuvrirProduit} />
               </li>
             ))}
           </ul>
@@ -84,30 +86,38 @@ function ListeProduits({
 }
 
 // Une miniature : image (avec un remplaçant si elle ne charge pas),
-// nom et prix sur une petite étiquette.
-function CarteProduit({ produit }: { produit: Produit }) {
+// nom et prix. Toute la carte est un bouton qui ouvre le détail (US3).
+function CarteProduit({
+  produit,
+  onOuvrir,
+}: {
+  produit: Produit
+  onOuvrir: (produit: Produit) => void
+}) {
   const [imageCassee, setImageCassee] = useState(false)
 
   return (
-    <article className="carte">
-      <div className="carte-image">
+    <button type="button" className="carte" onClick={() => onOuvrir(produit)}>
+      <span className="carte-image">
         {imageCassee || !produit.imageUrl ? (
           <span className="carte-sans-image" title={produit.nom}>
             {produit.nom}
           </span>
         ) : (
+          // alt vide : le nom est déjà écrit sous l'image, dans le bouton.
+          // title garde l'infobulle demandée par l'US2.
           <img
             src={produit.imageUrl}
-            alt={produit.nom}
+            alt=""
             title={produit.nom}
             loading="lazy"
             onError={() => setImageCassee(true)}
           />
         )}
-      </div>
-      <h3>{produit.nom}</h3>
-      <p className="prix">{formaterPrix(produit.prix)}</p>
-    </article>
+      </span>
+      <span className="carte-nom">{produit.nom}</span>
+      <span className="prix">{formaterPrix(produit.prix)}</span>
+    </button>
   )
 }
 
