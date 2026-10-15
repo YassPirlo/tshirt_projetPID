@@ -84,7 +84,7 @@ function PolitiqueCookies({ consentement, onAccueil, onModifierChoix }: Props) {
       <h2>Supprimer les données de votre navigateur</h2>
       <p>
         Vous pouvez aussi tout effacer depuis les réglages de votre navigateur,
-        dans la rubrique « Confidentialité » ou « Données de navigation ». Le
+        dans la rubrique «&nbsp;Confidentialité&nbsp;» ou «&nbsp;Données de navigation&nbsp;». Le
         site vous redemandera alors votre choix.
       </p>
     </article>
