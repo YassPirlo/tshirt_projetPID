@@ -10,6 +10,14 @@ import EnTete from './components/EnTete'
 import Accueil from './components/Accueil'
 import ListeProduits from './components/ListeProduits'
 import FicheProduit from './components/FicheProduit'
+import BandeauCookies from './components/BandeauCookies'
+import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
+import PolitiqueCookies from './components/PolitiqueCookies'
+import {
+  enregistrerConsentement,
+  lireConsentement,
+  type Consentement,
+} from './consentement'
 import './App.css'
 
 // App garde l'état de la page et choisit quoi afficher.
@@ -31,6 +39,29 @@ function App() {
   const [produit, setProduit] = useState<Produit | null>(null)
   const [chargementProduit, setChargementProduit] = useState(false)
   const [erreurProduit, setErreurProduit] = useState<string | null>(null)
+
+  // RGPD : page d'information affichée (null = la boutique)
+  const [pageInfo, setPageInfo] = useState<
+    'confidentialite' | 'cookies' | null
+  >(null)
+
+  // Cookies : choix du visiteur, lu une seule fois au démarrage.
+  // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
+  const [consentement, setConsentement] = useState<Consentement | null>(() =>
+    lireConsentement(),
+  )
+  const [bandeauRouvert, setBandeauRouvert] = useState(false)
+  const bandeauVisible = consentement === null || bandeauRouvert
+
+  const choisirCookies = (mesureAudience: boolean) => {
+    setConsentement(enregistrerConsentement(mesureAudience))
+    setBandeauRouvert(false)
+  }
+
+  const ouvrirPageInfo = (page: 'confidentialite' | 'cookies') => {
+    setPageInfo(page)
+    window.scrollTo({ top: 0 })
+  }
 
   // Requêtes en cours : si on clique ailleurs avant la réponse, on les
   // annule pour ne pas afficher les données de la mauvaise page.
@@ -56,6 +87,7 @@ function App() {
 
   // US2 : un clic sur une catégorie charge ses produits, sans recharger
   const afficherProduits = (categorie: Categorie) => {
+    setPageInfo(null)
     fermerProduit()
     requeteProduits.current?.abort()
     const controleur = new AbortController()
@@ -109,6 +141,7 @@ function App() {
   }
 
   const revenirAccueil = () => {
+    setPageInfo(null)
     fermerProduit()
     requeteProduits.current?.abort()
     setCategorieSelectionnee(null)
@@ -129,7 +162,18 @@ function App() {
       />
 
       <main>
-        {categorieSelectionnee && produitOuvertId !== null ? (
+        {pageInfo === 'confidentialite' ? (
+          <PolitiqueConfidentialite
+            onAccueil={revenirAccueil}
+            onCookies={() => ouvrirPageInfo('cookies')}
+          />
+        ) : pageInfo === 'cookies' ? (
+          <PolitiqueCookies
+            consentement={consentement}
+            onAccueil={revenirAccueil}
+            onModifierChoix={() => setBandeauRouvert(true)}
+          />
+        ) : categorieSelectionnee && produitOuvertId !== null ? (
           <FicheProduit
             key={produitOuvertId}
             categorie={categorieSelectionnee}
@@ -160,8 +204,40 @@ function App() {
 
       <footer className="pied">
         <p className="logo">TshirtShop</p>
+        <nav aria-label="Informations légales">
+          <ul className="pied-liens">
+            <li>
+              <button
+                type="button"
+                onClick={() => ouvrirPageInfo('confidentialite')}
+              >
+                Confidentialité
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={() => ouvrirPageInfo('cookies')}>
+                Cookies
+              </button>
+            </li>
+            <li>
+              <button type="button" onClick={() => setBandeauRouvert(true)}>
+                Gérer les cookies
+              </button>
+            </li>
+          </ul>
+        </nav>
         <p>Projet d'école, 2026. Les images sont provisoires.</p>
       </footer>
+
+      {bandeauVisible && (
+        <BandeauCookies
+          // key : le bandeau repart du choix enregistré à chaque ouverture
+          key={consentement?.date ?? 'aucun'}
+          mesureAudienceInitiale={consentement?.mesureAudience ?? false}
+          onEnregistrer={choisirCookies}
+          onEnSavoirPlus={() => ouvrirPageInfo('cookies')}
+        />
+      )}
     </>
   )
 }
