@@ -75,8 +75,11 @@ function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
         <h2 id="titre-mockup">Le t-shirt FACE</h2>
         <div className="mockup-contenu">
           <div className="mockup-image">
-            <img className="mockup-tshirt" src="/images/tshirt-noir.svg" alt="T-shirt noir avec le logo FACE imprimé sur la poitrine" />
-            <img className="mockup-logo" src="/images/logo-face-header.png" alt="" aria-hidden="true" />
+            <img
+              className="mockup-tshirt"
+              src="/images/tshirt-face-produit-noir.jpg"
+              alt="T-shirt noir avec le logo FACE imprimé sur la poitrine, posé sur un fond texturé"
+            />
           </div>
           <div className="mockup-texte">
             <p>
@@ -85,6 +88,38 @@ function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
             </p>
           </div>
         </div>
+      </motion.section>
+
+      <motion.section
+        className="section"
+        aria-labelledby="titre-galerie"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={apparition}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <h2 id="titre-galerie">Portée par tous</h2>
+        <ul className="galerie">
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-solo.jpg"
+              alt="Un homme porte un t-shirt FACE gris dans la rue"
+            />
+          </li>
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-groupe.jpg"
+              alt="Quatre personnes portent des t-shirts FACE de couleurs différentes"
+            />
+          </li>
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-enfants.jpg"
+              alt="Trois enfants portent des vêtements FACE dans un skatepark"
+            />
+          </li>
+        </ul>
       </motion.section>
 
       <section className="section" aria-labelledby="titre-categories">
