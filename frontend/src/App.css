@@ -454,6 +454,40 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+.fiche-description {
+  max-width: 55ch;
+  line-height: 1.6;
+  color: var(--gris);
+}
+
+.fiche-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0;
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.fiche-spec {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fiche-spec dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gris);
+}
+
+.fiche-spec dd {
+  margin: 0;
+}
+
 .fiche-infos .bouton {
   margin-top: 16px;
 }

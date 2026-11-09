@@ -5,7 +5,11 @@
     "back:windows": "cd backend && mvnw.cmd spring-boot:run",
     "front": "npm --prefix frontend run dev",
     "dev": "concurrently -n back,front -c blue,green \"npm run back\" \"npm run front\"",
-    "dev:windows": "concurrently -n back,front -c blue,green \"npm run back:windows\" \"npm run front\""
+    "dev:windows": "concurrently -n back,front -c blue,green \"npm run back:windows\" \"npm run front\"",
+    "test:back": "cd backend && ./mvnw test",
+    "test:back:windows": "cd backend && mvnw.cmd test",
+    "test:front": "npm --prefix frontend run test",
+    "test": "concurrently -n back,front -c blue,green \"npm run test:back\" \"npm run test:front\""
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

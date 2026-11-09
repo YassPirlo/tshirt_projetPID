@@ -23,6 +23,10 @@ export type Produit = {
   nom: string
   prix: number
   imageUrl: string
+  // Champs facultatifs : certains produits de test n'ont pas de fiche détaillée.
+  description?: string
+  matiere?: string
+  entretien?: string
   marque: Marque
 }
 

@@ -81,6 +81,27 @@ function FicheProduit({
               <h1 id="titre-produit">{produit.nom}</h1>
               <p className="fiche-prix">{formaterPrix(produit.prix)}</p>
 
+              {produit.description && (
+                <p className="fiche-description">{produit.description}</p>
+              )}
+
+              {(produit.matiere || produit.entretien) && (
+                <dl className="fiche-specs">
+                  {produit.matiere && (
+                    <div className="fiche-spec">
+                      <dt>Matière</dt>
+                      <dd>{produit.matiere}</dd>
+                    </div>
+                  )}
+                  {produit.entretien && (
+                    <div className="fiche-spec">
+                      <dt>Entretien</dt>
+                      <dd>{produit.entretien}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
+
               <button type="button" className="bouton" onClick={onRetour}>
                 Retour à {categorie.nom}
               </button>
