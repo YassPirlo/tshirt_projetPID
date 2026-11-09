@@ -34,8 +34,12 @@ function EnTete({
 }: Props) {
   return (
     <header className="entete">
-      <button type="button" className="logo" onClick={onAccueil}>
-        TshirtShop
+      <button
+        type="button"
+        className="logo entete-logo"
+        onClick={onAccueil}
+      >
+        <img src="/images/logo-face-header.png" alt="FACE, retour à l'accueil" />
       </button>
 
       <nav aria-label="Catégories" className="entete-menu">

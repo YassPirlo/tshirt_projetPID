@@ -1,22 +1,22 @@
 /* ===== Base du site : couleurs, typographie, remise à zéro ===== */
 
 :root {
-  /* Couleurs : noir et blanc, comme la plupart des boutiques de vêtements.
-     Les couleurs viennent des photos des produits. */
-  --encre: #111111; /* texte principal, en-tête, boutons */
-  --blanc: #ffffff; /* fond de page */
-  --fond-produit: #efeeeb; /* fond des photos produit */
-  --gris: #6b6b6b; /* texte secondaire */
-  --trait: #e3e3e0; /* bordures et séparateurs */
-  --erreur: #b3261e; /* messages d'erreur */
+  /* Couleurs : identité FACE, fond sombre et texte crème, esprit streetwear. */
+  --encre: #f3f2de; /* texte principal, en-tête, boutons */
+  --blanc: #1e1a17; /* fond de page */
+  --fond-produit: #2a241e; /* fond des photos produit */
+  --gris: #b5ac99; /* texte secondaire */
+  --trait: #3a332c; /* bordures et séparateurs */
+  --erreur: #ff6b5b; /* messages d'erreur */
 
-  /* Typographie : une seule famille, proche des polices des marques de sport */
+  /* Typographie : Barlow pour le texte courant, Archivo Black pour les titres/logo */
   --police: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
+  --police-affichage: 'Archivo Black', var(--police);
 
   /* Marge latérale commune à tout le site */
   --marge: clamp(16px, 3vw, 40px);
 
-  color-scheme: light;
+  color-scheme: dark;
   font-family: var(--police);
   font-size: 16px;
   line-height: 1.5;

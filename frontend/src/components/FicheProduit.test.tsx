@@ -28,6 +28,24 @@ describe('FicheProduit (US3)', () => {
     )
   })
 
+  it('affiche la description, la matière et l’entretien', () => {
+    render(
+      <FicheProduit
+        categorie={classiques}
+        produit={tshirtNoir}
+        chargement={false}
+        erreur={null}
+        onAccueil={vi.fn()}
+        onRetour={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText(/garde-robe/)).toBeInTheDocument()
+    expect(screen.getByText('Matière')).toBeInTheDocument()
+    expect(screen.getByText('100 % coton peigné, 185 g/m²')).toBeInTheDocument()
+    expect(screen.getByText('Entretien')).toBeInTheDocument()
+  })
+
   it('revient à la catégorie avec le bouton Retour', async () => {
     const onRetour = vi.fn()
     render(

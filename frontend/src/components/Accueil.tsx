@@ -1,4 +1,11 @@
+import { motion } from 'motion/react'
 import type { Categorie } from '../api'
+import LogoLoop from './LogoLoop'
+
+const apparition = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+}
 
 type Props = {
   categories: Categorie[]
@@ -24,7 +31,6 @@ function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
   return (
     <>
       <section className="bandeau" aria-labelledby="titre-accueil">
-        <img src="/images/bandeau.svg" alt="" />
         <div className="bandeau-texte">
           <h1 id="titre-accueil">Les essentiels en coton</h1>
           <p>Des coupes classiques et ajustées, pour femme et homme.</p>
@@ -39,6 +45,82 @@ function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
           )}
         </div>
       </section>
+
+      {!chargement && !erreur && categories.length > 0 && (
+        <div className="defilement" aria-hidden="true">
+          <LogoLoop
+            logos={categories.map((categorie) => ({
+              src: imageCategorie(categorie.nom),
+              alt: '',
+            }))}
+            logoHeight={72}
+            gap={56}
+            speed={60}
+            pauseOnHover
+            fadeOut
+            fadeOutColor="var(--blanc)"
+          />
+        </div>
+      )}
+
+      <motion.section
+        className="section"
+        aria-labelledby="titre-mockup"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={apparition}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <h2 id="titre-mockup">Le t-shirt FACE</h2>
+        <div className="mockup-contenu">
+          <div className="mockup-image">
+            <img
+              className="mockup-tshirt"
+              src="/images/tshirt-face-produit-noir.jpg"
+              alt="T-shirt noir avec le logo FACE imprimé sur la poitrine, posé sur un fond texturé"
+            />
+          </div>
+          <div className="mockup-texte">
+            <p>
+              Coupe classique en coton, logo FACE sérigraphié sur la poitrine.
+              Un premier aperçu de la collection, avant la mise en vente.
+            </p>
+          </div>
+        </div>
+      </motion.section>
+
+      <motion.section
+        className="section"
+        aria-labelledby="titre-galerie"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={apparition}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <h2 id="titre-galerie">Portée par tous</h2>
+        <ul className="galerie">
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-solo.jpg"
+              alt="Un homme porte un t-shirt FACE gris dans la rue"
+            />
+          </li>
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-groupe.jpg"
+              alt="Quatre personnes portent des t-shirts FACE de couleurs différentes"
+            />
+          </li>
+          <li>
+            <img
+              src="/images/tshirt-face-lifestyle-enfants.jpg"
+              alt="Trois enfants portent des vêtements FACE dans un skatepark"
+            />
+          </li>
+        </ul>
+      </motion.section>
 
       <section className="section" aria-labelledby="titre-categories">
         <h2 id="titre-categories">Acheter par catégorie</h2>

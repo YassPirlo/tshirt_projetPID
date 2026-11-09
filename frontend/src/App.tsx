@@ -7,6 +7,7 @@ import {
   type Produit,
 } from './api'
 import EnTete from './components/EnTete'
+import SilkBackground from './components/SilkBackground'
 import Accueil from './components/Accueil'
 import ListeProduits from './components/ListeProduits'
 import FicheProduit from './components/FicheProduit'
@@ -164,6 +165,10 @@ function App() {
 
   return (
     <>
+      {/* Fond animé commun à tout le site, derrière tout le contenu */}
+      <SilkBackground />
+      <div className="fond-filtre" aria-hidden="true" />
+
       {/* Lien d'évitement : premier élément atteint avec Tab, il permet
           de sauter l'en-tête et le menu */}
       <a className="lien-evitement" href="#contenu">
@@ -231,7 +236,7 @@ function App() {
       </main>
 
       <footer className="pied">
-        <p className="logo">TshirtShop</p>
+        <p className="logo">FACE</p>
         <nav aria-label="Informations légales">
           <ul className="pied-liens">
             <li>
