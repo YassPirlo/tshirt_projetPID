@@ -44,7 +44,12 @@ function EnTete({
         className="logo entete-logo"
         onClick={onAccueil}
       >
-        <img src="/images/logo-face-header.png" alt="FACE, retour à l'accueil" />
+        <img
+          src="/images/logo-face-header.png"
+          alt="FACE, retour à l'accueil"
+          width={162}
+          height={96}
+        />
       </button>
 
       <nav aria-label="Catégories" className="entete-menu">

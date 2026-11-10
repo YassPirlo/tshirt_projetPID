@@ -1,7 +1,30 @@
-/* ===== TshirtShop : mise en page =====
-   Style classique de boutique de vêtements : en-tête blanc, grand visuel
-   sur l'accueil, puis des photos sur fond clair. Le texte reste petit et
-   sobre, ce sont les images qui attirent l'oeil. */
+/* ===== FACE : mise en page =====
+   Fond sombre, texte crème. Les titres sont en Archivo Black, en
+   capitales, comme le logo au pochoir : c'est la seule chose qui parle
+   fort. Le reste (texte, boutons, cartes) reste sobre et sans arrondi. */
+
+/* Défilement doux vers une ancre (« Voir les catégories »), sauf si le
+   visiteur a demandé moins d'animations */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Une ancre ne doit pas s'arrêter sous l'en-tête collé en haut */
+[id] {
+  scroll-margin-top: 88px;
+}
+
+/* Titres : même traitement partout */
+h1,
+h2 {
+  font-family: var(--police-affichage);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
 
 /* ---------- Lien d'évitement (accessibilité) ----------
    Caché hors de l'écran, il apparaît en haut à gauche quand on arrive
@@ -72,9 +95,17 @@ main:focus {
   display: block;
 }
 
+/* Si les catégories ne tiennent pas toutes, le menu défile de gauche à
+   droite au lieu de pousser les icônes hors de l'écran */
+.entete-menu {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
 .entete-menu ul {
   display: flex;
-  gap: 32px;
+  gap: clamp(20px, 2.2vw, 32px);
 }
 
 .entete-menu button {
@@ -85,6 +116,7 @@ main:focus {
   font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
+  transition: border-color 0.15s;
 }
 
 .entete-menu button:hover,
@@ -93,6 +125,7 @@ main:focus {
 }
 
 .entete-attente {
+  padding: 22px 0 21px;
   color: var(--gris);
 }
 
@@ -102,14 +135,31 @@ main:focus {
   gap: 4px;
 }
 
+/* 44 px : taille minimale confortable pour un doigt */
 .entete-actions button {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 0;
+  border-radius: 50%;
   background: none;
-  cursor: default;
+  transition: background-color 0.15s;
+}
+
+.entete-actions button:hover {
+  background: var(--fond-produit);
+}
+
+/* Actions pas encore disponibles (recherche, favoris, panier) : on voit
+   au premier coup d'oeil qu'elles ne répondent pas */
+.entete-actions button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.entete-actions button[aria-disabled='true']:hover {
+  background: none;
 }
 
 /* ---------- Grand visuel de l'accueil ---------- */
@@ -118,9 +168,14 @@ main {
   flex: 1 0 auto;
 }
 
+/* Le titre est posé directement sur le fond animé : pas de boîte, c'est
+   lui le visuel. */
 .bandeau {
-  position: relative;
-  height: clamp(360px, 62vh, 620px);
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(420px, 76svh, 780px);
+  padding: clamp(40px, 7vw, 88px) var(--marge);
+  border-bottom: 1px solid var(--trait);
 }
 
 /* Fond animé "Silk" : fixe derrière tout le site, sous le voile et le contenu */
@@ -141,36 +196,52 @@ main {
   z-index: -1;
   background: rgb(30 26 23 / 0.55);
   pointer-events: none;
+  transition: background-color 0.3s;
+}
+
+/* Pages de lecture (rayon, fiche, compte, textes légaux) */
+.fond-filtre--dense {
+  background: rgb(30 26 23 / 0.86);
 }
 
 .bandeau-texte {
-  position: absolute;
-  bottom: clamp(24px, 5vw, 56px);
-  left: var(--marge);
-  max-width: 30rem;
-  padding: 24px 28px;
-  background: var(--blanc);
+  max-width: 1440px;
+  width: 100%;
+  margin-inline: auto;
 }
 
 .bandeau-texte h1 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  max-width: 11ch;
+  font-size: clamp(2.5rem, 12.5vw, 8.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
 }
 
 .bandeau-texte p {
-  margin-top: 6px;
-  color: var(--gris);
+  max-width: 34ch;
+  margin-top: clamp(16px, 2vw, 28px);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
 }
 
-.bandeau-texte .bouton {
-  margin-top: 18px;
+.bandeau-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(20px, 2.5vw, 32px);
 }
 
-.defilement {
-  padding: 24px 0;
-  background: var(--fond-produit);
+/* Seule animation d'arrivée du site : le titre, son texte et ses boutons
+   montent l'un après l'autre au premier affichage */
+.bandeau-texte > * {
+  animation: montee 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.bandeau-texte > :nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.bandeau-texte > :nth-child(3) {
+  animation-delay: 0.16s;
 }
 
 /* ---------- Sections ---------- */
@@ -180,77 +251,120 @@ main {
 .fiche {
   max-width: 1440px;
   margin-inline: auto;
-  padding: clamp(32px, 5vw, 56px) var(--marge) 72px;
+  padding: clamp(40px, 6vw, 88px) var(--marge);
+}
+
+.rayon,
+.fiche {
+  padding-top: clamp(24px, 3vw, 40px);
 }
 
 .section h2 {
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  font-weight: 700;
+  margin-bottom: clamp(20px, 2.5vw, 32px);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1;
 }
 
-/* ---------- Mockup FACE ---------- */
+/* ---------- Le t-shirt FACE ---------- */
 
-.mockup-contenu {
+.mockup {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  gap: clamp(24px, 4vw, 56px);
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: end;
 }
 
-.mockup-image {
-  position: relative;
-  max-width: 420px;
-  aspect-ratio: 4 / 5;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.mockup-tshirt {
-  display: block;
+.mockup-image img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1;
   object-fit: cover;
+}
+
+.mockup-texte {
+  padding-bottom: clamp(0px, 2vw, 24px);
 }
 
 .mockup-texte p {
+  max-width: 40ch;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
   color: var(--gris);
-  max-width: 48ch;
 }
 
-@media (max-width: 720px) {
-  .mockup-contenu {
-    grid-template-columns: 1fr;
-  }
-
-  .mockup-image {
-    max-width: 320px;
-    margin-inline: auto;
-  }
-}
-
-/* ---------- Galerie lifestyle ---------- */
+/* ---------- Galerie lifestyle ----------
+   La photo carrée à gauche, les deux photos larges empilées à droite :
+   chaque photo garde à peu près son cadrage d'origine, personne n'est
+   coupé. */
 
 .galerie {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1.1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+}
+
+.galerie li {
+  position: relative;
+  min-height: 0;
+  background: var(--fond-produit);
+}
+
+.galerie li:first-child {
+  grid-row: 1 / 3;
 }
 
 .galerie img {
-  display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 8px;
+  height: auto;
+  aspect-ratio: 1;
   object-fit: cover;
+}
+
+/* Les deux photos de droite remplissent leur case, dont la hauteur est
+   fixée par la photo de gauche */
+.galerie li:not(:first-child) img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+@media (max-width: 720px) {
+  .mockup {
+    grid-template-columns: 1fr;
+  }
+
+  .galerie {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 8px;
+  }
+
+  .galerie li:first-child {
+    grid-row: auto;
+  }
+
+  .galerie li:not(:first-child) img {
+    position: static;
+    height: auto;
+    aspect-ratio: 1200 / 669;
+  }
 }
 
 /* ---------- Catégories en images ---------- */
 
+/* Trois tuiles par ligne ; sur grand écran, les six catégories tiennent
+   sur une seule ligne */
 .categories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+
+@media (min-width: 1100px) {
+  .categories {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .categorie {
@@ -274,7 +388,7 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .categorie:hover .vignette img {
@@ -283,8 +397,8 @@ main {
 
 .categorie-nom {
   display: block;
-  margin-top: 10px;
-  font-size: 1.1rem;
+  margin-top: 12px;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
@@ -299,7 +413,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   padding: 0;
   list-style: none;
   font-size: 0.875rem;
@@ -311,8 +425,10 @@ main {
   margin-right: 8px;
 }
 
+/* Zone de clic agrandie sans déplacer le texte */
 .ariane button {
-  padding: 0;
+  margin: -8px -4px;
+  padding: 8px 4px;
   border: 0;
   background: none;
 }
@@ -331,9 +447,8 @@ main {
 }
 
 .rayon h1 {
-  font-size: clamp(1.6rem, 3vw, 2rem);
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: clamp(1.9rem, 5vw, 3.5rem);
+  line-height: 1;
 }
 
 .compteur {
@@ -345,8 +460,8 @@ main {
 
 .grille {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 32px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 40px 16px;
 }
 
 /* La carte entière est un bouton qui ouvre le détail du produit (US3) */
@@ -371,6 +486,11 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.carte:hover .carte-image img {
+  transform: scale(1.03);
 }
 
 /* Si l'image ne charge pas, on affiche le nom du produit à la place */
@@ -383,10 +503,16 @@ main {
   text-align: center;
 }
 
+/* Nom à gauche, prix à droite ; le prix passe dessous si la carte est étroite */
+.carte-texte {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin-top: 12px;
+}
+
 .carte-nom {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.95rem;
   font-weight: 500;
 }
 
@@ -419,68 +545,61 @@ main {
 
 .fiche-contenu {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 72px);
   align-items: start;
-  margin-top: 8px;
 }
 
-.fiche-image {
-  max-width: 640px;
-}
-
+/* La colonne de texte reste visible pendant qu'on fait défiler la photo */
 .fiche-infos {
+  position: sticky;
+  top: 96px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding-top: 8px;
+  gap: 12px;
 }
 
 .fiche-marque {
   color: var(--gris);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .fiche-infos h1 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 700;
-  line-height: 1.15;
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+  line-height: 1;
 }
 
 .fiche-prix {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .fiche-description {
   max-width: 55ch;
+  margin-top: 8px;
   line-height: 1.6;
   color: var(--gris);
 }
 
 .fiche-specs {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 4px 0;
-  padding: 16px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  width: 100%;
+  max-width: 55ch;
+  margin: 8px 0 0;
+  border-top: 1px solid var(--trait);
 }
 
 .fiche-spec {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 4px 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--trait);
 }
 
 .fiche-spec dt {
-  font-size: 0.8rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   color: var(--gris);
 }
 
@@ -512,12 +631,22 @@ main {
 
 /* ---------- Bouton principal ---------- */
 
+/* .bouton sert aussi sur un lien (<a>) : d'où display et text-decoration */
 .bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
   padding: 12px 24px;
   border: 1px solid var(--encre);
   background: var(--encre);
   color: var(--blanc);
   font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .bouton:hover {
@@ -525,42 +654,109 @@ main {
   color: var(--encre);
 }
 
-/* ---------- Pied de page ---------- */
+.bouton:active {
+  transform: translateY(1px);
+}
+
+/* Bouton au contour seul, pour l'action secondaire à côté d'un bouton plein */
+.bouton--contour {
+  background: transparent;
+  color: var(--encre);
+}
+
+.bouton--contour:hover {
+  background: var(--encre);
+  color: var(--blanc);
+}
+
+/* ---------- Pied de page ----------
+   Fond crème, à l'inverse du site. En haut les liens, en bas le nom de
+   la marque en très grand, coupé par le bord de la page. */
 
 .pied {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px 24px;
-  padding: 32px var(--marge);
+  overflow: hidden;
+  padding: clamp(40px, 6vw, 72px) var(--marge) 0;
   background: var(--encre);
-  color: rgb(0 0 0 / 0.6);
-  font-size: 0.875rem;
-}
-
-.pied .logo {
   color: var(--blanc);
-  font-size: 1.3rem;
 }
 
-.pied-liens {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 24px;
+.pied-haut {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px clamp(24px, 4vw, 64px);
+  max-width: 1440px;
+  margin-inline: auto;
 }
 
-.pied-liens button {
-  padding: 0;
+.pied-accroche {
+  max-width: 22ch;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pied-colonne h2 {
+  margin-bottom: 12px;
+  font-family: var(--police);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.pied-colonne ul {
+  display: grid;
+  gap: 2px;
+}
+
+.pied-colonne button {
+  padding: 6px 0;
   border: 0;
   background: none;
   color: var(--blanc);
+  text-align: left;
+}
+
+.pied-colonne button:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
+}
+
+/* Le mot « FACE » fait environ 2,7 fois la taille de sa police : cette
+   division le fait tenir d'un bord à l'autre, sur tous les écrans. La
+   marge négative fait passer le bas des lettres sous la dernière ligne. */
+.pied .pied-logo {
+  max-width: 1440px;
+  margin: clamp(32px, 6vw, 72px) auto -0.16em;
+  color: var(--blanc);
+  font-size: min(calc((100vw - 2 * var(--marge)) / 2.78), 32rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.pied-bas {
+  position: relative;
+  margin-inline: calc(-1 * var(--marge));
+  padding: 14px var(--marge);
+  background: var(--blanc);
+  color: var(--gris);
+  font-size: 0.875rem;
 }
 
 .pied :focus-visible {
   outline-color: var(--blanc);
+}
+
+@media (max-width: 720px) {
+  .pied-haut {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pied-accroche {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------- Bouton secondaire et lien dans le texte ---------- */
@@ -593,9 +789,8 @@ main {
 }
 
 .page-texte h1 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1.05;
 }
 
 .page-texte-date {
@@ -604,10 +799,14 @@ main {
   font-size: 0.875rem;
 }
 
+/* Sous-titres d'un long texte : en Barlow, plus faciles à parcourir */
 .page-texte h2 {
   margin: 32px 0 8px;
+  font-family: var(--police);
   font-size: 1.2rem;
   font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .page-texte p + p {
@@ -650,31 +849,35 @@ main {
 
 /* ---------- Bandeau des cookies ---------- */
 
+/* Une carte dans le coin plutôt qu'une barre sur toute la largeur : le
+   visiteur continue de voir la page pendant qu'il choisit */
 .cookies {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  bottom: var(--marge);
+  left: var(--marge);
   z-index: 20;
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px 32px;
-  padding: 20px var(--marge) calc(20px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--trait);
+  flex-direction: column;
+  gap: 16px;
+  width: min(30rem, calc(100vw - 2 * var(--marge)));
+  max-height: calc(100svh - 2 * var(--marge));
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--trait);
   background: var(--blanc);
-  box-shadow: 0 -4px 24px rgb(0 0 0 / 0.08);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.45);
 }
 
 .cookies-contenu {
-  flex: 1 1 32rem;
-  max-width: 72ch;
+  min-width: 0;
 }
 
 .cookies h2 {
+  font-family: var(--police);
   font-size: 1.1rem;
   font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .cookies p {
@@ -710,13 +913,78 @@ main {
   accent-color: var(--encre);
 }
 
+/* Trois boutons de même largeur : refuser reste aussi visible qu'accepter */
 .cookies-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
+.cookies-actions .bouton {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+
+/* ---------- Pages de compte (inscription, connexion, profil) ----------
+   Mise en page commune aux US4 à US7 : une colonne étroite et centrée.
+   Les styles de <form>, <label> et <input> sont déjà prêts pour les
+   formulaires à venir. */
+
+.formulaire {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  max-width: calc(28rem + 2 * var(--marge));
+  margin-inline: auto;
+  padding: clamp(40px, 7vw, 88px) var(--marge);
+}
+
+.formulaire h1 {
+  margin-bottom: 8px;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1;
+}
+
+.formulaire p {
+  color: var(--gris);
+}
+
+.formulaire form {
+  display: grid;
+  gap: 16px;
+}
+
+.formulaire label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.formulaire input {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--gris);
+  border-radius: 0;
+  background: var(--blanc);
+  color: var(--encre);
+  font: inherit;
+  font-weight: 400;
+}
+
+.formulaire input[aria-invalid='true'] {
+  border-color: var(--erreur);
+}
+
 /* ---------- Animations ---------- */
+
+@keyframes montee {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
 
 @keyframes pulsation {
   from {
@@ -750,13 +1018,12 @@ main {
     padding: 12px 0 10px;
   }
 
-  .entete-actions button {
-    width: 36px;
+  .entete-actions {
+    gap: 0;
   }
 
-  .bandeau-texte {
-    right: var(--marge);
-    padding: 18px 20px;
+  .entete-actions button {
+    width: 40px;
   }
 
   .grille {
@@ -764,20 +1031,40 @@ main {
     gap: 24px 8px;
   }
 
-  /* Bandeau cookies : les trois boutons prennent toute la largeur,
-     refuser reste aussi visible qu'accepter */
+  /* Bandeau cookies : collé en bas sur toute la largeur */
+  .cookies {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    padding: 16px var(--marge) calc(16px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+  }
+
+  /* « Personnaliser » sur sa ligne, puis refuser et accepter côte à
+     côte, à largeur égale */
   .cookies-actions {
-    flex-direction: column;
-    width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cookies-actions .bouton:first-child {
+    grid-column: 1 / -1;
   }
 
   .fiche-contenu {
     grid-template-columns: 1fr;
   }
 
+  .fiche-infos {
+    position: static;
+  }
+
+  .bandeau-actions .bouton {
+    flex: 1 1 auto;
+  }
+
   .categories {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 16px 8px;
   }
 
   .categorie-nom {

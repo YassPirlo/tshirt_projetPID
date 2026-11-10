@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router'
 // Police Barlow hébergée avec le site (paquet @fontsource) au lieu de
 // Google Fonts : le visiteur ne contacte aucun serveur tiers (RGPD)
 import '@fontsource/barlow/400.css'
@@ -16,7 +17,11 @@ createRoot(document.getElementById('root')!).render(
     {/* FournisseurAuth entoure toute l'application : useAuth() ne
         fonctionne que pour les composants placés à l'intérieur. */}
     <FournisseurAuth>
-      <App />
+      {/* BrowserRouter relie l'application à la barre d'adresse : chaque
+          page a sa propre adresse, sans rechargement */}
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </FournisseurAuth>
   </StrictMode>,
 )

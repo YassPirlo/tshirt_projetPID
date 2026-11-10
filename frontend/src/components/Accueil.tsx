@@ -1,11 +1,4 @@
-import { motion } from 'motion/react'
 import type { Categorie } from '../api'
-import LogoLoop from './LogoLoop'
-
-const apparition = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
-}
 
 type Props = {
   categories: Categorie[]
@@ -21,10 +14,16 @@ function imageCategorie(nom: string) {
   const n = nom.toLowerCase()
   if (n.includes('slim')) return '/images/categorie-slim.svg'
   if (n.includes('nouveaut')) return '/images/categorie-nouveautes.svg'
+  // « femme » avant « homme » : aucun des deux mots ne contient l'autre,
+  // mais l'ordre resterait le bon si on ajoutait « Hommes et femmes »
+  if (n.includes('femme')) return '/images/categorie-femme.svg'
+  if (n.includes('homme')) return '/images/categorie-homme.svg'
+  if (n.includes('enfant')) return '/images/categorie-enfant.svg'
   return '/images/categorie-classiques.svg'
 }
 
-// Page d'accueil (US1) : un grand visuel, puis les catégories en images.
+// Page d'accueil (US1) : un grand titre, le t-shirt FACE, les photos
+// portées, puis les catégories en images.
 function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
   const premiere = categories[0]
 
@@ -34,95 +33,87 @@ function Accueil({ categories, chargement, erreur, onChoisir }: Props) {
         <div className="bandeau-texte">
           <h1 id="titre-accueil">Les essentiels en coton</h1>
           <p>Des coupes classiques et ajustées, pour femme et homme.</p>
-          {premiere && (
-            <button
-              type="button"
-              className="bouton"
-              onClick={() => onChoisir(premiere)}
-            >
-              Découvrir : {premiere.nom}
-            </button>
-          )}
+          <div className="bandeau-actions">
+            {premiere && (
+              <button
+                type="button"
+                className="bouton"
+                onClick={() => onChoisir(premiere)}
+              >
+                Découvrir : {premiere.nom}
+              </button>
+            )}
+            <a className="bouton bouton--contour" href="#categories">
+              Voir les catégories
+            </a>
+          </div>
         </div>
       </section>
 
-      {!chargement && !erreur && categories.length > 0 && (
-        <div className="defilement" aria-hidden="true">
-          <LogoLoop
-            logos={categories.map((categorie) => ({
-              src: imageCategorie(categorie.nom),
-              alt: '',
-            }))}
-            logoHeight={72}
-            gap={56}
-            speed={60}
-            pauseOnHover
-            fadeOut
-            fadeOutColor="var(--blanc)"
+      <section className="section mockup" aria-labelledby="titre-mockup">
+        <div className="mockup-image">
+          <img
+            src="/images/tshirt-face-produit-noir.jpg"
+            alt="T-shirt noir avec le logo FACE imprimé sur la poitrine, posé sur un fond texturé"
+            width={1200}
+            height={1200}
+            loading="lazy"
+            decoding="async"
           />
         </div>
-      )}
-
-      <motion.section
-        className="section"
-        aria-labelledby="titre-mockup"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={apparition}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <h2 id="titre-mockup">Le t-shirt FACE</h2>
-        <div className="mockup-contenu">
-          <div className="mockup-image">
-            <img
-              className="mockup-tshirt"
-              src="/images/tshirt-face-produit-noir.jpg"
-              alt="T-shirt noir avec le logo FACE imprimé sur la poitrine, posé sur un fond texturé"
-            />
-          </div>
-          <div className="mockup-texte">
-            <p>
-              Coupe classique en coton, logo FACE sérigraphié sur la poitrine.
-              Un premier aperçu de la collection, avant la mise en vente.
-            </p>
-          </div>
+        <div className="mockup-texte">
+          <h2 id="titre-mockup">Le t-shirt FACE</h2>
+          <p>
+            Coupe classique en coton, logo FACE sérigraphié sur la poitrine. Un
+            premier aperçu de la collection, avant la mise en vente.
+          </p>
         </div>
-      </motion.section>
+      </section>
 
-      <motion.section
-        className="section"
-        aria-labelledby="titre-galerie"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={apparition}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
+      <section className="section" aria-labelledby="titre-galerie">
         <h2 id="titre-galerie">Portée par tous</h2>
+        {/* width/height : le navigateur réserve la place avant le
+            chargement, la page ne saute pas. loading="lazy" : ces photos
+            sont sous le premier écran, elles ne ralentissent pas l'arrivée. */}
         <ul className="galerie">
           <li>
             <img
               src="/images/tshirt-face-lifestyle-solo.jpg"
               alt="Un homme porte un t-shirt FACE gris dans la rue"
+              width={1200}
+              height={1200}
+              loading="lazy"
+              decoding="async"
             />
           </li>
           <li>
             <img
               src="/images/tshirt-face-lifestyle-groupe.jpg"
               alt="Quatre personnes portent des t-shirts FACE de couleurs différentes"
+              width={1200}
+              height={669}
+              loading="lazy"
+              decoding="async"
             />
           </li>
           <li>
             <img
               src="/images/tshirt-face-lifestyle-enfants.jpg"
               alt="Trois enfants portent des vêtements FACE dans un skatepark"
+              width={1200}
+              height={669}
+              loading="lazy"
+              decoding="async"
             />
           </li>
         </ul>
-      </motion.section>
+      </section>
 
-      <section className="section" aria-labelledby="titre-categories">
+      <section
+        id="categories"
+        className="section"
+        aria-labelledby="titre-categories"
+      >
         <h2 id="titre-categories">Acheter par catégorie</h2>
 
         {erreur && (
