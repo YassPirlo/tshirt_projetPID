@@ -9,14 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 // Les deux endpoints sont ensemble parce qu'ils lisent et détruisent la même
 // session, et qu'ils sont portés par la même page du front (Profil.tsx).
 //
-// Il manque une brique dans UtilisateurService : la recherche par id. Elle
-// n'y est pas encore, mais UtilisateurRepository hérite déjà de
-// findById(Long) grâce à JpaRepository.
+// Tout ce qu'il faut côté service existe déjà : utilisez
+// UtilisateurService.trouverParId(). Vous n'avez donc AUCUNE raison de
+// modifier UtilisateurService.java — ce fichier est à US5, qui y ajoute la
+// vérification du mot de passe. Y toucher vous garantit un conflit.
 //
 // US7 — @GetMapping("/api/profil"), avec HttpServletRequest en paramètre :
 //  1. SessionUtilisateur.idConnecte(requete) ;
-//  2. Optional vide -> 401 ; sinon relire le compte en base et répondre 200
-//     avec UtilisateurReponse.depuis(...).
+//  2. Optional vide -> 401 ; sinon utilisateurService.trouverParId(id) et
+//     répondre 200 avec UtilisateurReponse.depuis(...).
 //
 // Pourquoi relire la base au lieu de garder l'objet en session : voir le
 // commentaire de SessionUtilisateur. Et pensez au cas du compte supprimé
