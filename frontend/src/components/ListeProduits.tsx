@@ -115,8 +115,10 @@ function CarteProduit({
           />
         )}
       </span>
-      <span className="carte-nom">{produit.nom}</span>
-      <span className="prix">{formaterPrix(produit.prix)}</span>
+      <span className="carte-texte">
+        <span className="carte-nom">{produit.nom}</span>
+        <span className="prix">{formaterPrix(produit.prix)}</span>
+      </span>
     </button>
   )
 }

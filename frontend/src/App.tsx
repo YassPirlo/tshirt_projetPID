@@ -195,11 +195,18 @@ function App() {
     contenu.current?.focus({ preventScroll: true })
   }, [vue])
 
+  const surAccueil = !pageInfo && !pageCompte && !categorieSelectionnee
+
   return (
     <>
       {/* Fond animé commun à tout le site, derrière tout le contenu */}
       <SilkBackground />
-      <div className="fond-filtre" aria-hidden="true" />
+      {/* Le fond animé ne se montre vraiment que sur l'accueil : ailleurs
+          le voile est plus dense, pour que rien ne gêne la lecture */}
+      <div
+        className={surAccueil ? 'fond-filtre' : 'fond-filtre fond-filtre--dense'}
+        aria-hidden="true"
+      />
 
       {/* Lien d'évitement : premier élément atteint avec Tab, il permet
           de sauter l'en-tête et le menu */}
@@ -293,35 +300,71 @@ function App() {
       </main>
 
       <footer className="pied">
-        <p className="logo">FACE</p>
-        <nav aria-label="Informations légales">
-          <ul className="pied-liens">
-            <li>
-              <button type="button" onClick={() => ouvrirPageInfo('mentions')}>
-                Mentions légales
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={() => ouvrirPageInfo('confidentialite')}
-              >
-                Confidentialité
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => ouvrirPageInfo('cookies')}>
-                Cookies
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => setBandeauRouvert(true)}>
-                Gérer les cookies
-              </button>
-            </li>
-          </ul>
-        </nav>
-        <p>Projet d'école, 2026. Les images sont provisoires.</p>
+        <div className="pied-haut">
+          <p className="pied-accroche">
+            T-shirts pour femme et homme, dans toutes les tailles.
+          </p>
+
+          {categories.length > 0 && (
+            <nav aria-label="Boutique" className="pied-colonne">
+              <h2>Boutique</h2>
+              <ul>
+                {categories.map((categorie) => (
+                  <li key={categorie.id}>
+                    <button
+                      type="button"
+                      onClick={() => afficherProduits(categorie)}
+                    >
+                      {categorie.nom}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
+          <nav aria-label="Informations légales" className="pied-colonne">
+            <h2>Informations</h2>
+            <ul>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => ouvrirPageInfo('mentions')}
+                >
+                  Mentions légales
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => ouvrirPageInfo('confidentialite')}
+                >
+                  Confidentialité
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => ouvrirPageInfo('cookies')}>
+                  Cookies
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => setBandeauRouvert(true)}>
+                  Gérer les cookies
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* Grand logo en lettres : décoratif, le nom du site est déjà
+            annoncé par l'en-tête */}
+        <p className="logo pied-logo" aria-hidden="true">
+          FACE
+        </p>
+
+        <p className="pied-bas">
+          Projet d'école, 2026. Les images sont provisoires.
+        </p>
       </footer>
 
       {bandeauVisible && (

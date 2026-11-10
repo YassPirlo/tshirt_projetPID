@@ -102,7 +102,11 @@ function FicheProduit({
                 </dl>
               )}
 
-              <button type="button" className="bouton" onClick={onRetour}>
+              <button
+                type="button"
+                className="bouton bouton--contour"
+                onClick={onRetour}
+              >
                 Retour à {categorie.nom}
               </button>
             </div>

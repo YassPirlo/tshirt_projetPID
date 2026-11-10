@@ -4,6 +4,10 @@ import { useEffect, useRef } from 'react'
 // coloré par un bruit fractal (fbm) qui ondule lentement dans le temps.
 // Réglages et shader générés avec le Shader Builder de 21st.dev.
 
+// Réglages de performance du fond (voir plus bas)
+const ECHELLE_RENDU = 0.6
+const INTERVALLE_MS = 1000 / 30 - 2
+
 const VERTEX_SHADER = `
 attribute vec2 a_position;
 void main() {
@@ -334,7 +338,11 @@ function SilkBackground() {
     let height = 0
     function resize() {
       if (!canvas) return
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      // Le motif est flou et passe sous un voile : le dessiner à 60 % de
+      // la taille de l'écran ne se voit pas, et le processeur graphique
+      // calcule près de 3 fois moins de pixels (jusqu'à 11 fois moins sur
+      // un écran Retina, qui était dessiné en double définition).
+      const dpr = ECHELLE_RENDU
       width = Math.round(canvas.clientWidth * dpr)
       height = Math.round(canvas.clientHeight * dpr)
       if (canvas.width !== width || canvas.height !== height) {
@@ -350,11 +358,38 @@ function SilkBackground() {
 
     const start = performance.now()
     let frame = 0
-    function draw() {
-      const elapsed = (performance.now() - start) / 1000
+    let dernierDessin = -Infinity
+    function draw(maintenant: number) {
+      frame = requestAnimationFrame(draw)
+      // Le fond bouge lentement : 30 images par seconde suffisent, et
+      // laissent la moitié du temps au reste de la page (défilement, clics)
+      if (maintenant - dernierDessin < INTERVALLE_MS) return
+      dernierDessin = maintenant
+      const elapsed = (maintenant - start) / 1000
       gl!.uniform4f(uScene, width, height, elapsed * 0.76, 4.0)
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
-      frame = requestAnimationFrame(draw)
+    }
+
+    // « Réduire les animations » activé dans le système : une seule image
+    // fixe, sans boucle. Le CSS ne peut pas arrêter un canvas.
+    const reduire = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+    if (reduire?.matches) {
+      const dessinerFixe = () => {
+        resize()
+        gl.uniform4f(uScene, width, height, 12.0, 4.0)
+        gl.drawArrays(gl.TRIANGLES, 0, 3)
+      }
+      const observateur = new ResizeObserver(dessinerFixe)
+      observateur.observe(canvas)
+      dessinerFixe()
+      return () => {
+        observateur.disconnect()
+        resizeObserver.disconnect()
+        gl.deleteProgram(program)
+        gl.deleteShader(vertexShader)
+        gl.deleteShader(fragmentShader)
+        gl.deleteBuffer(positionBuffer)
+      }
     }
 
     function handleVisibility() {
