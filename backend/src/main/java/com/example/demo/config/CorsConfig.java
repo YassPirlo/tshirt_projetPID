@@ -18,7 +18,13 @@ public class CorsConfig {
                 registry.addMapping("/api/**")
                         .allowedOrigins("http://localhost:5173")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        // Autorise le navigateur à envoyer le cookie de session
+                        // (JSESSIONID) avec les appels authentifiés : sans ça,
+                        // l'utilisateur serait déconnecté à chaque requête.
+                        // Possible uniquement parce que allowedOrigins est une
+                        // origine précise et non "*".
+                        .allowCredentials(true);
             }
         };
     }

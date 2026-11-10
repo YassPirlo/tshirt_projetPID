@@ -10,9 +10,23 @@ FLUSH PRIVILEGES;
 
 USE tshirt_shop;
 
+DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS produit;
 DROP TABLE IF EXISTS marque;
 DROP TABLE IF EXISTS categorie;
+
+-- Comptes clients (US4 a US7 : inscription, connexion, deconnexion, profil)
+CREATE TABLE utilisateur (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  -- UNIQUE : la base refuse deux comptes avec la meme adresse
+  email VARCHAR(255) NOT NULL UNIQUE,
+  -- Jamais le mot de passe en clair : on stocke un hachage BCrypt,
+  -- qui fait toujours exactement 60 caracteres.
+  mot_de_passe VARCHAR(60) NOT NULL,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  date_inscription DATETIME NOT NULL
+);
 
 CREATE TABLE categorie (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
