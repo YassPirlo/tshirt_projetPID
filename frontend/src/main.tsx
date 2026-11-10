@@ -9,9 +9,14 @@ import '@fontsource/barlow/700.css'
 import '@fontsource/archivo-black/400.css'
 import './index.css'
 import App from './App.tsx'
+import { FournisseurAuth } from './FournisseurAuth.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {/* FournisseurAuth entoure toute l'application : useAuth() ne
+        fonctionne que pour les composants placés à l'intérieur. */}
+    <FournisseurAuth>
+      <App />
+    </FournisseurAuth>
   </StrictMode>,
 )

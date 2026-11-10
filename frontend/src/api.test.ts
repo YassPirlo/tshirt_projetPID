@@ -33,7 +33,12 @@ describe('getCategories (US1)', () => {
 
     const categories = await getCategories()
 
-    expect(faux).toHaveBeenCalledWith('/api/categories', { signal: undefined })
+    // credentials: 'include' est vérifié explicitement : sans lui, le
+    // cookie de session ne partirait pas et les US5 à US7 casseraient.
+    expect(faux).toHaveBeenCalledWith('/api/categories', {
+      credentials: 'include',
+      signal: undefined,
+    })
     expect(categories).toEqual([{ id: 1, nom: 'T-shirts classiques' }])
   })
 
@@ -51,6 +56,7 @@ describe('getProduitsDeCategorie (US2)', () => {
     await getProduitsDeCategorie(3)
 
     expect(faux).toHaveBeenCalledWith('/api/categories/3/produits', {
+      credentials: 'include',
       signal: undefined,
     })
   })
@@ -62,7 +68,10 @@ describe('getProduit (US3)', () => {
 
     const produit = await getProduit(2)
 
-    expect(faux).toHaveBeenCalledWith('/api/produits/2', { signal: undefined })
+    expect(faux).toHaveBeenCalledWith('/api/produits/2', {
+      credentials: 'include',
+      signal: undefined,
+    })
     expect(produit.nom).toBe('T-shirt noir')
   })
 

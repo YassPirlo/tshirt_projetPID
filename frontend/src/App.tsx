@@ -15,6 +15,10 @@ import BandeauCookies from './components/BandeauCookies'
 import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
 import PolitiqueCookies from './components/PolitiqueCookies'
 import MentionsLegales from './components/MentionsLegales'
+import Inscription from './components/Inscription'
+import Connexion from './components/Connexion'
+import Profil from './components/Profil'
+import { useAuth } from './ContexteAuth'
 import {
   enregistrerConsentement,
   lireConsentement,
@@ -22,7 +26,13 @@ import {
 } from './consentement'
 import './App.css'
 
+// Pages d'information (bas de page)
 type PageInfo = 'mentions' | 'confidentialite' | 'cookies'
+
+// Pages de compte (US4 à US7). Volontairement séparé de PageInfo : ce
+// sont deux groupes de pages sans rapport, et les mélanger obligerait à
+// tester « est-ce une page de compte ? » un peu partout.
+type PageCompte = 'inscription' | 'connexion' | 'profil'
 
 // App garde l'état de la page et choisit quoi afficher.
 // L'affichage lui-même est dans les composants du dossier components.
@@ -47,6 +57,13 @@ function App() {
   // Page d'information affichée (null = la boutique)
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(null)
 
+  // Page de compte affichée (null = la boutique). US4 à US7.
+  const [pageCompte, setPageCompte] = useState<PageCompte | null>(null)
+
+  // Qui est connecté : fourni par ContexteAuth, partagé avec l'en-tête
+  // et les pages de compte.
+  const { utilisateur } = useAuth()
+
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
   const [consentement, setConsentement] = useState<Consentement | null>(() =>
@@ -61,9 +78,22 @@ function App() {
   }
 
   const ouvrirPageInfo = (page: PageInfo) => {
+    setPageCompte(null)
     setPageInfo(page)
     window.scrollTo({ top: 0 })
   }
+
+  // US4 à US7 : ouvre une page de compte et ferme tout le reste
+  const ouvrirPageCompte = (page: PageCompte) => {
+    setPageInfo(null)
+    setPageCompte(page)
+    window.scrollTo({ top: 0 })
+  }
+
+  // Clic sur l'icône « Mon compte » de l'en-tête : le profil si on est
+  // déjà connecté, le formulaire de connexion sinon.
+  const ouvrirCompte = () =>
+    ouvrirPageCompte(utilisateur ? 'profil' : 'connexion')
 
   // Requêtes en cours : si on clique ailleurs avant la réponse, on les
   // annule pour ne pas afficher les données de la mauvaise page.
@@ -90,6 +120,7 @@ function App() {
   // US2 : un clic sur une catégorie charge ses produits, sans recharger
   const afficherProduits = (categorie: Categorie) => {
     setPageInfo(null)
+    setPageCompte(null)
     fermerProduit()
     requeteProduits.current?.abort()
     const controleur = new AbortController()
@@ -144,6 +175,7 @@ function App() {
 
   const revenirAccueil = () => {
     setPageInfo(null)
+    setPageCompte(null)
     fermerProduit()
     requeteProduits.current?.abort()
     setCategorieSelectionnee(null)
@@ -153,7 +185,7 @@ function App() {
   // contenu. Sinon, le bouton cliqué disparaît et un utilisateur au
   // clavier ou au lecteur d'écran ne sait plus où il se trouve.
   const contenu = useRef<HTMLElement>(null)
-  const vue = `${pageInfo}|${categorieSelectionnee?.id}|${produitOuvertId}`
+  const vue = `${pageInfo}|${pageCompte}|${categorieSelectionnee?.id}|${produitOuvertId}`
   const vuePrecedente = useRef(vue)
   useEffect(() => {
     if (vuePrecedente.current === vue) return // premier affichage
@@ -182,14 +214,39 @@ function App() {
       <EnTete
         categories={categories}
         chargement={chargement}
-        // Sur une page d'information, aucune catégorie n'est soulignée
-        categorieActive={pageInfo ? null : categorieSelectionnee}
+        // Sur une page d'information ou de compte, aucune catégorie
+        // n'est soulignée
+        categorieActive={pageInfo || pageCompte ? null : categorieSelectionnee}
         onChoisir={afficherProduits}
         onAccueil={revenirAccueil}
+        // US4 à US7 : l'icône « Mon compte » devient active
+        onCompte={ouvrirCompte}
+        connecte={utilisateur !== null}
       />
 
       <main id="contenu" ref={contenu} tabIndex={-1}>
-        {pageInfo === 'mentions' ? (
+        {/* US4 à US7 : pages de compte. Chacune est dans son fichier,
+            pour que les quatre US se développent en parallèle sans se
+            gêner dans App.tsx. */}
+        {pageCompte === 'inscription' ? (
+          <Inscription
+            onAccueil={revenirAccueil}
+            onInscrit={revenirAccueil}
+            onConnexion={() => ouvrirPageCompte('connexion')}
+          />
+        ) : pageCompte === 'connexion' ? (
+          <Connexion
+            onAccueil={revenirAccueil}
+            onConnecte={() => ouvrirPageCompte('profil')}
+            onInscription={() => ouvrirPageCompte('inscription')}
+          />
+        ) : pageCompte === 'profil' ? (
+          <Profil
+            onAccueil={revenirAccueil}
+            onDeconnecte={revenirAccueil}
+            onConnexion={() => ouvrirPageCompte('connexion')}
+          />
+        ) : pageInfo === 'mentions' ? (
           <MentionsLegales
             onAccueil={revenirAccueil}
             onConfidentialite={() => ouvrirPageInfo('confidentialite')}

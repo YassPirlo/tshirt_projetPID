@@ -12,13 +12,16 @@ type Props = {
   categorieActive: Categorie | null
   onChoisir: (categorie: Categorie) => void
   onAccueil: () => void
+  // US4 à US7 : ouvre le profil si connecté, la connexion sinon
+  onCompte: () => void
+  connecte: boolean
 }
 
-// Les actions de droite seront branchées plus tard :
-// compte (US4 à US7) et panier (US8, US9).
-const actions = [
-  { nom: 'Rechercher', Icone: IconeRecherche },
-  { nom: 'Mon compte', Icone: IconeCompte },
+// Actions encore sans US : favoris et panier (US8, US9).
+// La recherche et le compte sont écrits à la main plus bas, le premier
+// parce qu'il garde sa place dans l'ordre, le second parce qu'il est
+// désormais cliquable.
+const actionsInactives = [
   { nom: 'Favoris', Icone: IconeFavoris },
   { nom: 'Panier', Icone: IconePanier },
 ]
@@ -31,6 +34,8 @@ function EnTete({
   categorieActive,
   onChoisir,
   onAccueil,
+  onCompte,
+  connecte,
 }: Props) {
   return (
     <header className="entete">
@@ -63,7 +68,29 @@ function EnTete({
       </nav>
 
       <ul className="entete-actions">
-        {actions.map(({ nom, Icone }) => (
+        <li>
+          <button
+            type="button"
+            aria-label="Rechercher"
+            aria-disabled="true"
+            title="Rechercher (bientôt disponible)"
+          >
+            <IconeRecherche />
+          </button>
+        </li>
+        <li>
+          {/* Le libellé change selon l'état : un lecteur d'écran annonce
+              « Mon profil » ou « Se connecter », pas une icône muette. */}
+          <button
+            type="button"
+            aria-label={connecte ? 'Mon profil' : 'Se connecter'}
+            title={connecte ? 'Mon profil' : 'Se connecter'}
+            onClick={onCompte}
+          >
+            <IconeCompte />
+          </button>
+        </li>
+        {actionsInactives.map(({ nom, Icone }) => (
           <li key={nom}>
             <button
               type="button"
