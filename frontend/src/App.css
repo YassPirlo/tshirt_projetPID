@@ -95,9 +95,17 @@ main:focus {
   display: block;
 }
 
+/* Si les catégories ne tiennent pas toutes, le menu défile de gauche à
+   droite au lieu de pousser les icônes hors de l'écran */
+.entete-menu {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
 .entete-menu ul {
   display: flex;
-  gap: 32px;
+  gap: clamp(20px, 2.2vw, 32px);
 }
 
 .entete-menu button {
@@ -345,10 +353,18 @@ main {
 
 /* ---------- Catégories en images ---------- */
 
+/* Trois tuiles par ligne ; sur grand écran, les six catégories tiennent
+   sur une seule ligne */
 .categories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+
+@media (min-width: 1100px) {
+  .categories {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .categorie {
@@ -1048,8 +1064,7 @@ main {
   }
 
   .categories {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 16px 8px;
   }
 
   .categorie-nom {

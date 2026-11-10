@@ -14,6 +14,11 @@ function imageCategorie(nom: string) {
   const n = nom.toLowerCase()
   if (n.includes('slim')) return '/images/categorie-slim.svg'
   if (n.includes('nouveaut')) return '/images/categorie-nouveautes.svg'
+  // « femme » avant « homme » : aucun des deux mots ne contient l'autre,
+  // mais l'ordre resterait le bon si on ajoutait « Hommes et femmes »
+  if (n.includes('femme')) return '/images/categorie-femme.svg'
+  if (n.includes('homme')) return '/images/categorie-homme.svg'
+  if (n.includes('enfant')) return '/images/categorie-enfant.svg'
   return '/images/categorie-classiques.svg'
 }
 
