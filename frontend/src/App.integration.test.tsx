@@ -1,7 +1,7 @@
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import App from './App'
+import { rendreApp } from './test/rendre'
 import {
   classiques,
   nouveautes,
@@ -20,12 +20,17 @@ const reponses: Record<string, unknown> = {
   '/api/produits/2': tshirtNoir,
 }
 
+// Appelé au démarrage par ContexteAuth : 401 = personne n'est connecté,
+// c'est l'état normal pour ces tests.
+const PROFIL = '/api/profil'
+
 function demarrerFauxBack() {
-  const faux = vi.fn(async (url: string) =>
-    url in reponses
+  const faux = vi.fn(async (url: string) => {
+    if (url === PROFIL) return new Response('{}', { status: 401 })
+    return url in reponses
       ? new Response(JSON.stringify(reponses[url]), { status: 200 })
-      : new Response('{}', { status: 404 }),
-  )
+      : new Response('{}', { status: 404 })
+  })
   vi.stubGlobal('fetch', faux)
   return faux
 }
@@ -42,7 +47,7 @@ describe('Parcours complet (US1, US2, US3)', () => {
   it('accueil → catégorie → produit → retour, sans recharger la page', async () => {
     const faux = demarrerFauxBack()
     const adresseDeDepart = window.location.href
-    render(<App />)
+    rendreApp()
 
     // US1 : la page d'accueil affiche les catégories
     expect(
@@ -85,7 +90,17 @@ describe('Parcours complet (US1, US2, US3)', () => {
 
     // Les données viennent toutes de l'API, et la page n'a jamais changé
     // d'adresse : tout s'est fait sans rechargement
-    expect(faux.mock.calls.map(([url]) => url)).toEqual([
+    const appels = faux.mock.calls.map(([url]) => url)
+
+    // La vérification de session part au démarrage, une seule fois.
+    // Son rang n'est pas figé ici : React exécute les effets des
+    // composants enfants avant ceux du parent, donc l'ordre entre
+    // /api/profil et /api/categories est un détail d'implémentation.
+    expect(appels.filter((url) => url === PROFIL)).toHaveLength(1)
+
+    // Les appels métier, eux, doivent arriver dans cet ordre précis :
+    // c'est le parcours accueil -> catégorie -> produit.
+    expect(appels.filter((url) => url !== PROFIL)).toEqual([
       '/api/categories',
       '/api/categories/1/produits',
       '/api/produits/2',
@@ -95,7 +110,7 @@ describe('Parcours complet (US1, US2, US3)', () => {
 
   it('affiche un message quand la catégorie choisie est vide', async () => {
     demarrerFauxBack()
-    render(<App />)
+    rendreApp()
 
     await userEvent.click(
       await menu().findByRole('button', { name: 'Nouveautes' }),
@@ -111,7 +126,7 @@ describe('Parcours complet (US1, US2, US3)', () => {
       'fetch',
       vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
     )
-    render(<App />)
+    rendreApp()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Impossible de charger les catégories.',

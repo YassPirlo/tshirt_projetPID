@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import App from './App'
 import Accueil from './components/Accueil'
 import BandeauCookies from './components/BandeauCookies'
 import FicheProduit from './components/FicheProduit'
@@ -10,6 +9,7 @@ import MentionsLegales from './components/MentionsLegales'
 import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
 import PolitiqueCookies from './components/PolitiqueCookies'
 import { problemesAccessibilite } from './test/accessibilite'
+import { rendreApp } from './test/rendre'
 import {
   classiques,
   nouveautes,
@@ -158,7 +158,7 @@ describe('Accessibilité de la page entière', () => {
   })
 
   it('tout le contenu est rangé dans des zones (en-tête, contenu, pied…)', async () => {
-    render(<App />)
+    rendreApp()
     await screen.findAllByRole('button', { name: 'Nouveautes' })
 
     expect(
@@ -167,7 +167,7 @@ describe('Accessibilité de la page entière', () => {
   })
 
   it('la touche Tab atteint d’abord le lien « Aller au contenu »', async () => {
-    render(<App />)
+    rendreApp()
 
     await userEvent.tab()
 
@@ -176,7 +176,7 @@ describe('Accessibilité de la page entière', () => {
   })
 
   it('après avoir ouvert un produit au clavier, le focus va au contenu', async () => {
-    render(<App />)
+    rendreApp()
     const menu = await screen.findByRole('banner')
     const bouton = await screen.findAllByRole('button', {
       name: 'T-shirts classiques',
