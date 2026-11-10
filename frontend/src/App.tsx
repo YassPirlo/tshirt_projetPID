@@ -1,4 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useMatch,
+  useNavigate,
+  useNavigationType,
+} from 'react-router'
 import {
   getCategories,
   getProduit,
@@ -6,6 +15,7 @@ import {
   type Categorie,
   type Produit,
 } from './api'
+import { chemins, lireId, modeles } from './chemins'
 import EnTete from './components/EnTete'
 import SilkBackground from './components/SilkBackground'
 import Accueil from './components/Accueil'
@@ -18,6 +28,7 @@ import MentionsLegales from './components/MentionsLegales'
 import Inscription from './components/Inscription'
 import Connexion from './components/Connexion'
 import Profil from './components/Profil'
+import PageIntrouvable from './components/PageIntrouvable'
 import { useAuth } from './ContexteAuth'
 import {
   enregistrerConsentement,
@@ -26,39 +37,53 @@ import {
 } from './consentement'
 import './App.css'
 
-// Pages d'information (bas de page)
-type PageInfo = 'mentions' | 'confidentialite' | 'cookies'
+// Titre de l'onglet pour les pages fixes. Les pages d'une catégorie ou
+// d'un produit utilisent leur nom (voir plus bas).
+const TITRES: Record<string, string> = {
+  [chemins.inscription]: 'Créer un compte',
+  [chemins.connexion]: 'Se connecter',
+  [chemins.profil]: 'Mon profil',
+  [chemins.mentions]: 'Mentions légales',
+  [chemins.confidentialite]: 'Confidentialité',
+  [chemins.cookies]: 'Cookies',
+}
 
-// Pages de compte (US4 à US7). Volontairement séparé de PageInfo : ce
-// sont deux groupes de pages sans rapport, et les mélanger obligerait à
-// tester « est-ce une page de compte ? » un peu partout.
-type PageCompte = 'inscription' | 'connexion' | 'profil'
-
-// App garde l'état de la page et choisit quoi afficher.
-// L'affichage lui-même est dans les composants du dossier components.
+// App charge les données et choisit quoi afficher d'après l'adresse.
+//
+// C'est l'ADRESSE qui dit quelle page est affichée (React Router), et
+// plus des variables d'état : le bouton Retour du navigateur fonctionne,
+// un F5 reste sur la même page, et on peut envoyer le lien d'un produit.
+// L'affichage lui-même est dans les composants du dossier components,
+// qui ne connaissent pas le routeur : ils reçoivent des fonctions
+// (onAccueil, onChoisir…) et c'est App qui les traduit en adresses.
 function App() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const typeNavigation = useNavigationType()
+
+  // Identifiants lus dans l'adresse (null si on est sur une autre page).
+  // « /* » : la page d'un produit fait aussi partie de sa catégorie.
+  const routeCategorie = useMatch(modeles.categorie + '/*')
+  const routeProduit = useMatch(modeles.produit)
+  const categorieId = lireId(routeCategorie?.params.categorieId)
+  const produitId = lireId(routeProduit?.params.produitId)
+
   const [categories, setCategories] = useState<Categorie[]>([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
 
-  const [categorieSelectionnee, setCategorieSelectionnee] =
-    useState<Categorie | null>(null)
+  // US2 : produits de la dernière catégorie chargée. On retient à quelle
+  // catégorie ils appartiennent : tant que l'adresse en désigne une
+  // autre, la liste est « en cours de chargement ».
+  const [rayon, setRayon] = useState<{
+    categorieId: number
+    produits: Produit[]
+  } | null>(null)
+  const [erreurRayon, setErreurRayon] = useState<number | null>(null)
 
-  const [produits, setProduits] = useState<Produit[]>([])
-  const [chargementProduits, setChargementProduits] = useState(false)
-  const [erreurProduits, setErreurProduits] = useState<string | null>(null)
-
-  // US3 : produit dont on affiche le détail (null = on affiche la liste)
-  const [produitOuvertId, setProduitOuvertId] = useState<number | null>(null)
-  const [produit, setProduit] = useState<Produit | null>(null)
-  const [chargementProduit, setChargementProduit] = useState(false)
-  const [erreurProduit, setErreurProduit] = useState<string | null>(null)
-
-  // Page d'information affichée (null = la boutique)
-  const [pageInfo, setPageInfo] = useState<PageInfo | null>(null)
-
-  // Page de compte affichée (null = la boutique). US4 à US7.
-  const [pageCompte, setPageCompte] = useState<PageCompte | null>(null)
+  // US3 : dernier produit chargé, sur le même principe
+  const [fiche, setFiche] = useState<Produit | null>(null)
+  const [erreurFiche, setErreurFiche] = useState<number | null>(null)
 
   // Qui est connecté : fourni par ContexteAuth, partagé avec l'en-tête
   // et les pages de compte.
@@ -77,30 +102,18 @@ function App() {
     setBandeauRouvert(false)
   }
 
-  const ouvrirPageInfo = (page: PageInfo) => {
-    setPageCompte(null)
-    setPageInfo(page)
-    window.scrollTo({ top: 0 })
-  }
-
-  // US4 à US7 : ouvre une page de compte et ferme tout le reste
-  const ouvrirPageCompte = (page: PageCompte) => {
-    setPageInfo(null)
-    setPageCompte(page)
-    window.scrollTo({ top: 0 })
-  }
+  // Changer de page = changer d'adresse. Le reste (chargement des
+  // données, affichage) en découle.
+  const revenirAccueil = () => navigate(chemins.accueil)
+  const afficherProduits = (categorie: Categorie) =>
+    navigate(chemins.categorie(categorie.id))
 
   // Clic sur l'icône « Mon compte » de l'en-tête : le profil si on est
   // déjà connecté, le formulaire de connexion sinon.
   const ouvrirCompte = () =>
-    ouvrirPageCompte(utilisateur ? 'profil' : 'connexion')
+    navigate(utilisateur ? chemins.profil : chemins.connexion)
 
-  // Requêtes en cours : si on clique ailleurs avant la réponse, on les
-  // annule pour ne pas afficher les données de la mauvaise page.
-  const requeteProduits = useRef<AbortController | null>(null)
-  const requeteProduit = useRef<AbortController | null>(null)
-
-  // US1 : au chargement de la page d'accueil, on récupère les catégories
+  // US1 : au chargement du site, on récupère les catégories
   useEffect(() => {
     const controleur = new AbortController()
 
@@ -117,85 +130,115 @@ function App() {
     return () => controleur.abort()
   }, [])
 
-  // US2 : un clic sur une catégorie charge ses produits, sans recharger
-  const afficherProduits = (categorie: Categorie) => {
-    setPageInfo(null)
-    setPageCompte(null)
-    fermerProduit()
-    requeteProduits.current?.abort()
-    const controleur = new AbortController()
-    requeteProduits.current = controleur
-
-    setCategorieSelectionnee(categorie)
-    setProduits([])
-    setChargementProduits(true)
-    setErreurProduits(null)
-    window.scrollTo({ top: 0 })
-
-    getProduitsDeCategorie(categorie.id, controleur.signal)
-      .then((data) => setProduits(data))
-      .catch((e) => {
-        if (e.name !== 'AbortError')
-          setErreurProduits('Impossible de charger les produits.')
-      })
-      .finally(() => {
-        if (!controleur.signal.aborted) setChargementProduits(false)
-      })
-  }
-
-  // US3 : un clic sur un produit charge son détail, sans recharger
-  const afficherProduit = (choisi: Produit) => {
-    requeteProduit.current?.abort()
-    const controleur = new AbortController()
-    requeteProduit.current = controleur
-
-    setProduitOuvertId(choisi.id)
-    setProduit(null)
-    setChargementProduit(true)
-    setErreurProduit(null)
-    window.scrollTo({ top: 0 })
-
-    getProduit(choisi.id, controleur.signal)
-      .then((data) => setProduit(data))
-      .catch((e) => {
-        if (e.name !== 'AbortError')
-          setErreurProduit('Impossible de charger ce produit.')
-      })
-      .finally(() => {
-        if (!controleur.signal.aborted) setChargementProduit(false)
-      })
-  }
-
-  // Retour à la liste de la catégorie (elle est encore en mémoire)
-  const fermerProduit = () => {
-    requeteProduit.current?.abort()
-    setProduitOuvertId(null)
-    window.scrollTo({ top: 0 })
-  }
-
-  const revenirAccueil = () => {
-    setPageInfo(null)
-    setPageCompte(null)
-    fermerProduit()
-    requeteProduits.current?.abort()
-    setCategorieSelectionnee(null)
-  }
-
-  // Accessibilité : à chaque changement de page, le focus va au début du
-  // contenu. Sinon, le bouton cliqué disparaît et un utilisateur au
-  // clavier ou au lecteur d'écran ne sait plus où il se trouve.
-  const contenu = useRef<HTMLElement>(null)
-  const vue = `${pageInfo}|${pageCompte}|${categorieSelectionnee?.id}|${produitOuvertId}`
-  const vuePrecedente = useRef(vue)
+  // US2 : quand l'adresse désigne une catégorie, on charge ses produits.
+  // Si ce sont déjà ceux en mémoire (retour depuis un produit), rien à
+  // faire. Si on change de page avant la réponse, la requête est annulée
+  // pour ne pas afficher les données de la mauvaise page.
+  const rayonCharge = rayon?.categorieId
   useEffect(() => {
-    if (vuePrecedente.current === vue) return // premier affichage
-    vuePrecedente.current = vue
-    // preventScroll : la page est déjà remontée en haut, le focus ne doit
-    // pas la faire défiler sous l'en-tête collé en haut
-    contenu.current?.focus({ preventScroll: true })
-  }, [vue])
+    if (categorieId === null || categorieId === rayonCharge) return
+    const controleur = new AbortController()
 
-  const surAccueil = !pageInfo && !pageCompte && !categorieSelectionnee
+    getProduitsDeCategorie(categorieId, controleur.signal)
+      .then((produits) => {
+        setRayon({ categorieId, produits })
+        setErreurRayon(null)
+      })
+      .catch((e) => {
+        if (e.name !== 'AbortError') setErreurRayon(categorieId)
+      })
+
+    return () => controleur.abort()
+  }, [categorieId, rayonCharge])
+
+  // US3 : quand l'adresse désigne un produit, on charge son détail
+  useEffect(() => {
+    if (produitId === null) return
+    const controleur = new AbortController()
+
+    getProduit(produitId, controleur.signal)
+      .then((produit) => {
+        setFiche(produit)
+        setErreurFiche(null)
+      })
+      .catch((e) => {
+        if (e.name !== 'AbortError') {
+          setFiche(null)
+          setErreurFiche(produitId)
+        }
+      })
+
+    return () => controleur.abort()
+  }, [produitId])
+
+  // Ce qui est affiché se déduit de l'adresse et de ce qui est en mémoire
+  const categorieSelectionnee =
+    categories.find((categorie) => categorie.id === categorieId) ?? null
+
+  const rayonPret = rayon !== null && rayon.categorieId === categorieId
+  const erreurProduits =
+    categorieId !== null && erreurRayon === categorieId
+      ? 'Impossible de charger les produits.'
+      : null
+  const chargementProduits = !rayonPret && !erreurProduits
+
+  const produit = fiche !== null && fiche.id === produitId ? fiche : null
+  const erreurProduit =
+    produitId !== null && erreurFiche === produitId
+      ? 'Impossible de charger ce produit.'
+      : null
+  const chargementProduit = !produit && !erreurProduit
+
+  // Une adresse de catégorie ou de produit donne une « page introuvable »
+  // si l'identifiant n'est pas un nombre, ou si la catégorie n'existe pas
+  // (on ne peut le savoir qu'une fois les catégories chargées).
+  const pageCategorie = (contenu: (categorie: Categorie) => ReactNode) => {
+    if (categorieSelectionnee) return contenu(categorieSelectionnee)
+    if (categorieId !== null && chargement)
+      return (
+        <p className="rayon compteur" aria-busy="true">
+          Chargement…
+        </p>
+      )
+    if (categorieId !== null && erreur)
+      return (
+        <div className="rayon">
+          <p className="message message--erreur" role="alert">
+            {erreur} Vérifiez que le serveur est démarré, puis rechargez la
+            page.
+          </p>
+        </div>
+      )
+    return <PageIntrouvable onAccueil={revenirAccueil} />
+  }
+
+  // Le fond animé ne se montre vraiment que sur l'accueil
+  const surAccueil = pathname === chemins.accueil
+
+  // Titre de l'onglet : il suit la page, pour l'historique du navigateur,
+  // les favoris et les lecteurs d'écran
+  const titrePage =
+    produit?.nom ?? categorieSelectionnee?.nom ?? TITRES[pathname] ?? null
+  useEffect(() => {
+    document.title = titrePage ? `${titrePage} | FACE` : 'FACE'
+  }, [titrePage])
+
+  // À chaque changement de page :
+  // - on remonte en haut, sauf avec les boutons Précédent / Suivant du
+  //   navigateur (« POP »), qui retrouvent seuls l'endroit où on était ;
+  // - accessibilité : le focus va au début du contenu. Sinon, le bouton
+  //   cliqué disparaît et un utilisateur au clavier ou au lecteur d'écran
+  //   ne sait plus où il se trouve.
+  const contenu = useRef<HTMLElement>(null)
+  const pagePrecedente = useRef(pathname)
+  useEffect(() => {
+    if (pagePrecedente.current === pathname) return // premier affichage
+    pagePrecedente.current = pathname
+    if (typeNavigation !== 'POP') window.scrollTo({ top: 0 })
+    // preventScroll : le focus ne doit pas faire défiler la page sous
+    // l'en-tête collé en haut
+    contenu.current?.focus({ preventScroll: true })
+  }, [pathname, typeNavigation])
 
   return (
     <>
@@ -221,9 +264,9 @@ function App() {
       <EnTete
         categories={categories}
         chargement={chargement}
-        // Sur une page d'information ou de compte, aucune catégorie
+        // Hors d'une page de catégorie ou de produit, aucune catégorie
         // n'est soulignée
-        categorieActive={pageInfo || pageCompte ? null : categorieSelectionnee}
+        categorieActive={categorieSelectionnee}
         onChoisir={afficherProduits}
         onAccueil={revenirAccueil}
         // US4 à US7 : l'icône « Mon compte » devient active
@@ -232,71 +275,136 @@ function App() {
       />
 
       <main id="contenu" ref={contenu} tabIndex={-1}>
-        {/* US4 à US7 : pages de compte. Chacune est dans son fichier,
-            pour que les quatre US se développent en parallèle sans se
-            gêner dans App.tsx. */}
-        {pageCompte === 'inscription' ? (
-          <Inscription
-            onAccueil={revenirAccueil}
-            onInscrit={revenirAccueil}
-            onConnexion={() => ouvrirPageCompte('connexion')}
+        {/* Une <Route> par page : React Router affiche celle dont le
+            chemin correspond à l'adresse. */}
+        <Routes>
+          <Route
+            path={chemins.accueil}
+            element={
+              <Accueil
+                categories={categories}
+                chargement={chargement}
+                erreur={erreur}
+                onChoisir={afficherProduits}
+              />
+            }
           />
-        ) : pageCompte === 'connexion' ? (
-          <Connexion
-            onAccueil={revenirAccueil}
-            onConnecte={() => ouvrirPageCompte('profil')}
-            onInscription={() => ouvrirPageCompte('inscription')}
+
+          {/* US2 */}
+          <Route
+            path={modeles.categorie}
+            element={pageCategorie((categorie) => (
+              <ListeProduits
+                categorie={categorie}
+                produits={rayonPret ? rayon.produits : []}
+                chargement={chargementProduits}
+                erreur={erreurProduits}
+                onAccueil={revenirAccueil}
+                onOuvrirProduit={(choisi) =>
+                  navigate(chemins.produit(categorie.id, choisi.id))
+                }
+              />
+            ))}
           />
-        ) : pageCompte === 'profil' ? (
-          <Profil
-            onAccueil={revenirAccueil}
-            onDeconnecte={revenirAccueil}
-            onConnexion={() => ouvrirPageCompte('connexion')}
+
+          {/* US3 */}
+          <Route
+            path={modeles.produit}
+            element={pageCategorie((categorie) =>
+              produitId === null ? (
+                <PageIntrouvable onAccueil={revenirAccueil} />
+              ) : produit?.categorie && produit.categorie.id !== categorie.id ? (
+                // Adresse bricolée (bon produit, mauvaise catégorie) : on
+                // la corrige, sans ajouter d'étape à l'historique
+                <Navigate
+                  replace
+                  to={chemins.produit(produit.categorie.id, produit.id)}
+                />
+              ) : (
+                <FicheProduit
+                  key={produitId}
+                  categorie={categorie}
+                  produit={produit}
+                  chargement={chargementProduit}
+                  erreur={erreurProduit}
+                  onAccueil={revenirAccueil}
+                  onRetour={() => navigate(chemins.categorie(categorie.id))}
+                />
+              ),
+            )}
           />
-        ) : pageInfo === 'mentions' ? (
-          <MentionsLegales
-            onAccueil={revenirAccueil}
-            onConfidentialite={() => ouvrirPageInfo('confidentialite')}
-            onCookies={() => ouvrirPageInfo('cookies')}
+
+          {/* US4 à US7 : pages de compte. Chacune est dans son fichier,
+              pour que les quatre US se développent en parallèle sans se
+              gêner dans App.tsx. */}
+          <Route
+            path={chemins.inscription}
+            element={
+              <Inscription
+                onAccueil={revenirAccueil}
+                onInscrit={revenirAccueil}
+                onConnexion={() => navigate(chemins.connexion)}
+              />
+            }
           />
-        ) : pageInfo === 'confidentialite' ? (
-          <PolitiqueConfidentialite
-            onAccueil={revenirAccueil}
-            onCookies={() => ouvrirPageInfo('cookies')}
+          <Route
+            path={chemins.connexion}
+            element={
+              <Connexion
+                onAccueil={revenirAccueil}
+                onConnecte={() => navigate(chemins.profil)}
+                onInscription={() => navigate(chemins.inscription)}
+              />
+            }
           />
-        ) : pageInfo === 'cookies' ? (
-          <PolitiqueCookies
-            consentement={consentement}
-            onAccueil={revenirAccueil}
-            onModifierChoix={() => setBandeauRouvert(true)}
+          <Route
+            path={chemins.profil}
+            element={
+              <Profil
+                onAccueil={revenirAccueil}
+                onDeconnecte={revenirAccueil}
+                onConnexion={() => navigate(chemins.connexion)}
+              />
+            }
           />
-        ) : categorieSelectionnee && produitOuvertId !== null ? (
-          <FicheProduit
-            key={produitOuvertId}
-            categorie={categorieSelectionnee}
-            produit={produit}
-            chargement={chargementProduit}
-            erreur={erreurProduit}
-            onAccueil={revenirAccueil}
-            onRetour={fermerProduit}
+
+          {/* Pages d'information (bas de page) */}
+          <Route
+            path={chemins.mentions}
+            element={
+              <MentionsLegales
+                onAccueil={revenirAccueil}
+                onConfidentialite={() => navigate(chemins.confidentialite)}
+                onCookies={() => navigate(chemins.cookies)}
+              />
+            }
           />
-        ) : categorieSelectionnee ? (
-          <ListeProduits
-            categorie={categorieSelectionnee}
-            produits={produits}
-            chargement={chargementProduits}
-            erreur={erreurProduits}
-            onAccueil={revenirAccueil}
-            onOuvrirProduit={afficherProduit}
+          <Route
+            path={chemins.confidentialite}
+            element={
+              <PolitiqueConfidentialite
+                onAccueil={revenirAccueil}
+                onCookies={() => navigate(chemins.cookies)}
+              />
+            }
           />
-        ) : (
-          <Accueil
-            categories={categories}
-            chargement={chargement}
-            erreur={erreur}
-            onChoisir={afficherProduits}
+          <Route
+            path={chemins.cookies}
+            element={
+              <PolitiqueCookies
+                consentement={consentement}
+                onAccueil={revenirAccueil}
+                onModifierChoix={() => setBandeauRouvert(true)}
+              />
+            }
           />
-        )}
+
+          {/* Toute autre adresse */}
+          <Route
+            path="*"
+            element={<PageIntrouvable onAccueil={revenirAccueil} />}
+          />
+        </Routes>
       </main>
 
       <footer className="pied">
@@ -329,7 +437,7 @@ function App() {
               <li>
                 <button
                   type="button"
-                  onClick={() => ouvrirPageInfo('mentions')}
+                  onClick={() => navigate(chemins.mentions)}
                 >
                   Mentions légales
                 </button>
@@ -337,13 +445,13 @@ function App() {
               <li>
                 <button
                   type="button"
-                  onClick={() => ouvrirPageInfo('confidentialite')}
+                  onClick={() => navigate(chemins.confidentialite)}
                 >
                   Confidentialité
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => ouvrirPageInfo('cookies')}>
+                <button type="button" onClick={() => navigate(chemins.cookies)}>
                   Cookies
                 </button>
               </li>
@@ -373,7 +481,7 @@ function App() {
           key={consentement?.date ?? 'aucun'}
           mesureAudienceInitiale={consentement?.mesureAudience ?? false}
           onEnregistrer={choisirCookies}
-          onEnSavoirPlus={() => ouvrirPageInfo('cookies')}
+          onEnSavoirPlus={() => navigate(chemins.cookies)}
         />
       )}
     </>

@@ -28,6 +28,9 @@ export type Produit = {
   matiere?: string
   entretien?: string
   marque: Marque
+  // Renvoyée par le back sur le détail d'un produit. Sert à corriger une
+  // adresse qui placerait le produit dans la mauvaise catégorie.
+  categorie?: Categorie
 }
 
 // Compte client (US4 à US7). Le mot de passe n'y figure pas : le back

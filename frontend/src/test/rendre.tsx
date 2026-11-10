@@ -9,14 +9,23 @@
 
 import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import { BrowserRouter } from 'react-router'
 import App from '../App'
 import { FournisseurAuth } from '../FournisseurAuth'
 
-// Affiche toute l'application, contexte d'authentification compris.
-export function rendreApp() {
+// Affiche toute l'application, contexte d'authentification et routeur
+// compris, comme dans main.tsx.
+//
+// adresse : la page sur laquelle « arrive » le visiteur. On la remet à
+// chaque appel, parce que jsdom garde la même barre d'adresse d'un test
+// à l'autre.
+export function rendreApp(adresse = '/') {
+  window.history.replaceState(null, '', adresse)
   return render(
     <FournisseurAuth>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </FournisseurAuth>,
   )
 }
