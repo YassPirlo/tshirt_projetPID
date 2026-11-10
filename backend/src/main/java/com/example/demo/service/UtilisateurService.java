@@ -56,6 +56,16 @@ public class UtilisateurService {
         return utilisateurRepository.findByEmail(normaliserEmail(email));
     }
 
+    // US7 : retrouver le compte dont l'id est en session.
+    //
+    // Optional vide dans un cas bien réel, qu'il faut traiter : la session
+    // porte un id valide, mais le compte a été supprimé depuis. Le profil
+    // doit alors répondre 401 comme si personne n'était connecté, et non
+    // planter sur un Utilisateur absent.
+    public Optional<Utilisateur> trouverParId(Long id) {
+        return utilisateurRepository.findById(id);
+    }
+
     // Les emails sont comparés en minuscules et sans espaces autour :
     // sans ça, "Yassine@Mail.be" et "yassine@mail.be" créeraient deux comptes.
     private String normaliserEmail(String email) {

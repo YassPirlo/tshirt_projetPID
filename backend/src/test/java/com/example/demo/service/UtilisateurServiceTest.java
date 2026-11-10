@@ -116,4 +116,22 @@ class UtilisateurServiceTest {
 
         assertThat(utilisateurService.trouverParEmail("inconnu@mail.be")).isEmpty();
     }
+
+    // US7 : le profil part de l'id stocké en session.
+    @Test
+    void trouveUnCompteParSonId() {
+        Utilisateur existant = new Utilisateur();
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(existant));
+
+        assertThat(utilisateurService.trouverParId(42L)).contains(existant);
+    }
+
+    // Le cas que le profil doit traiter : la session porte un id valide,
+    // mais le compte a été supprimé entre-temps.
+    @Test
+    void renvoieUnOptionalVideSiLIdNExistePlus() {
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.empty());
+
+        assertThat(utilisateurService.trouverParId(42L)).isEmpty();
+    }
 }
