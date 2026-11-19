@@ -26,7 +26,7 @@ public class UtilisateurService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // US4 : créer un compte.
+    // US5 : créer un compte.
     // Lève EmailDejaUtiliseException si l'adresse est déjà prise.
     public Utilisateur inscrire(InscriptionRequete requete) {
         String email = normaliserEmail(requete.email());
@@ -51,13 +51,13 @@ public class UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
-    // Utilisé par la connexion (US5) et le profil (US7) pour retrouver un
+    // Utilisé par la connexion (US4) et le profil (US6) pour retrouver un
     // compte. Optional vide si l'email est inconnu.
     public Optional<Utilisateur> trouverParEmail(String email) {
         return utilisateurRepository.findByEmail(normaliserEmail(email));
     }
 
-    // US5 : vérifier un couple email / mot de passe.
+    // US4 : vérifier un couple email / mot de passe.
     //
     // Renvoie le compte si les identifiants sont bons, Optional vide sinon.
     // Volontairement, l'appelant ne peut pas savoir POURQUOI c'est vide
@@ -73,7 +73,7 @@ public class UtilisateurService {
                         requete.motDePasse(), utilisateur.getMotDePasse()));
     }
 
-    // US7 : retrouver le compte dont l'id est en session.
+    // US6 : retrouver le compte dont l'id est en session.
     //
     // Optional vide dans un cas bien réel, qu'il faut traiter : la session
     // porte un id valide, mais le compte a été supprimé depuis. Le profil

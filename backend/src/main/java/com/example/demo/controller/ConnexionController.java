@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-// US5 — Connexion.
+// US4 — Connexion.
 //
 // Le controller ne fait que traduire en HTTP : la vérification du mot de
 // passe vit dans UtilisateurService.verifier(), l'ouverture de la session

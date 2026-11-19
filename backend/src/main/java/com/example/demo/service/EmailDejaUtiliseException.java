@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-// Levée par UtilisateurService.inscrire() quand l'email est déjà pris (US4).
+// Levée par UtilisateurService.inscrire() quand l'email est déjà pris (US5).
 //
 // RuntimeException (et non Exception) : pas besoin de l'attraper partout,
 // c'est le controller qui la traduira en réponse HTTP 409 Conflict.

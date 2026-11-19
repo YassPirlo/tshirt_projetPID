@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-// Données envoyées par le formulaire d'inscription (US4).
+// Données envoyées par le formulaire d'inscription (US5).
 //
 // Un "record" : classe immuable dont Java génère le constructeur et les
 // accesseurs. Jackson remplit ses champs à partir du JSON reçu.

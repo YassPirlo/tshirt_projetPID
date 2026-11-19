@@ -2,7 +2,7 @@ package com.example.demo.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-// Données envoyées par le formulaire de connexion (US5).
+// Données envoyées par le formulaire de connexion (US4).
 //
 // Volontairement plus permissif que InscriptionRequete : ici on ne valide
 // QUE la présence des deux champs.

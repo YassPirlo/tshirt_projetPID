@@ -58,7 +58,7 @@ async function remplirEtEnvoyer(email: string, motDePasse: string) {
   await utilisateur.click(screen.getByRole('button', { name: 'Se connecter' }))
 }
 
-describe('Connexion (US5)', () => {
+describe('Connexion (US4)', () => {
   it('affiche le formulaire avec un champ mot de passe masqué', () => {
     simulerBack(() => json({}, 401))
     afficher()

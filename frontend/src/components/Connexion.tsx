@@ -1,4 +1,4 @@
-// US5 — Connexion.
+// US4 — Connexion.
 //
 // Le formulaire appelle POST /api/connexion. Si le back accepte, il a déjà
 // ouvert la session (cookie JSESSIONID) : il ne reste ici qu'à prévenir le

@@ -5,20 +5,20 @@ import jakarta.servlet.http.HttpSession;
 
 import java.util.Optional;
 
-// Point de rendez-vous des US5, US6 et US7.
+// Point de rendez-vous des US4, US6 et US7.
 //
 // POURQUOI CETTE CLASSE EXISTE
-// Trois US différentes manipulent la même session : US5 l'ouvre, US6 la
-// ferme, US7 la lit. Si chacune écrivait « session.setAttribute("userId") »
-// de son côté, la moindre différence de nom d'attribut passerait inaperçue :
-// chaque US réussirait ses propres tests, et le parcours complet
+// Trois US différentes manipulent la même session : US4 l'ouvre, US7 la
+// ferme, le profil (US6) la lit. Si chacune écrivait
+// « session.setAttribute("userId") » de son côté, la moindre différence
+// de nom d'attribut passerait inaperçue : chaque US réussirait ses propres tests, et le parcours complet
 // (connexion -> profil) serait cassé. Le nom est donc écrit UNE fois, ici,
 // et personne n'y touche.
 //
 // ON STOCKE L'ID, PAS L'OBJET Utilisateur
 // Un Utilisateur en session serait une photo prise au moment de la
 // connexion : si le compte change en base, la session servirait indéfiniment
-// des informations périmées. Avec l'id, US7 relit la base à chaque appel et
+// des informations périmées. Avec l'id, US6 relit la base à chaque appel et
 // renvoie toujours l'état réel du compte.
 public final class SessionUtilisateur {
 
@@ -29,7 +29,7 @@ public final class SessionUtilisateur {
     private SessionUtilisateur() {
     }
 
-    // US5 : à appeler APRÈS avoir vérifié le mot de passe, jamais avant.
+    // US4 : à appeler APRÈS avoir vérifié le mot de passe, jamais avant.
     //
     // On détruit la session existante avant d'en créer une neuve. Sans cela,
     // un visiteur arrivé avec un JSESSIONID choisi par un attaquant
@@ -54,7 +54,7 @@ public final class SessionUtilisateur {
         requete.getSession(true).setAttribute(CLE, idUtilisateur);
     }
 
-    // US7 : l'id du compte connecté, ou Optional.empty() si personne.
+    // US6 : l'id du compte connecté, ou Optional.empty() si personne.
     //
     // getSession(false) est important : « false » signifie « ne crée pas de
     // session s'il n'y en a pas ». Avec getSession() tout court, le simple
@@ -69,7 +69,7 @@ public final class SessionUtilisateur {
         return valeur instanceof Long id ? Optional.of(id) : Optional.empty();
     }
 
-    // US6 : invalide la session côté serveur.
+    // US7 : invalide la session côté serveur.
     //
     // invalidate() et pas removeAttribute() : on jette la session entière,
     // pas seulement l'attribut. C'est ce qui garantit qu'un F5 après
