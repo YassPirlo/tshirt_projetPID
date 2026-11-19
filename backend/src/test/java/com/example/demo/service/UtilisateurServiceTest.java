@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
 import com.example.demo.model.Utilisateur;
 import com.example.demo.repository.UtilisateurRepository;
@@ -133,5 +134,61 @@ class UtilisateurServiceTest {
         when(utilisateurRepository.findById(42L)).thenReturn(Optional.empty());
 
         assertThat(utilisateurService.trouverParId(42L)).isEmpty();
+    }
+
+    // US5 : un compte en base dont le mot de passe est réellement haché
+    // par BCrypt, comme le ferait inscrire().
+    private Utilisateur compteAvecMotDePasse(String motDePasse) {
+        return new Utilisateur("yassine@mail.be", passwordEncoder.encode(motDePasse),
+                "Vitullo", "Yassine");
+    }
+
+    @Test
+    void accepteLeBonMotDePasse() {
+        Utilisateur existant = compteAvecMotDePasse("motdepasse123");
+        when(utilisateurRepository.findByEmail("yassine@mail.be"))
+                .thenReturn(Optional.of(existant));
+
+        assertThat(utilisateurService.verifier(
+                new ConnexionRequete("yassine@mail.be", "motdepasse123"))).contains(existant);
+    }
+
+    @Test
+    void refuseUnMauvaisMotDePasse() {
+        when(utilisateurRepository.findByEmail("yassine@mail.be"))
+                .thenReturn(Optional.of(compteAvecMotDePasse("motdepasse123")));
+
+        assertThat(utilisateurService.verifier(
+                new ConnexionRequete("yassine@mail.be", "mauvais123"))).isEmpty();
+    }
+
+    @Test
+    void refuseUnEmailInconnu() {
+        when(utilisateurRepository.findByEmail("inconnu@mail.be")).thenReturn(Optional.empty());
+
+        assertThat(utilisateurService.verifier(
+                new ConnexionRequete("inconnu@mail.be", "motdepasse123"))).isEmpty();
+    }
+
+    // Le hachage stocké ne doit jamais servir de mot de passe : quelqu'un
+    // qui aurait lu la base ne peut pas se connecter en le recopiant.
+    @Test
+    void refuseLeHachageUtiliseCommeMotDePasse() {
+        Utilisateur existant = compteAvecMotDePasse("motdepasse123");
+        when(utilisateurRepository.findByEmail("yassine@mail.be"))
+                .thenReturn(Optional.of(existant));
+
+        assertThat(utilisateurService.verifier(
+                new ConnexionRequete("yassine@mail.be", existant.getMotDePasse()))).isEmpty();
+    }
+
+    @Test
+    void accepteLEmailQuelleQueSoitSaCasse() {
+        Utilisateur existant = compteAvecMotDePasse("motdepasse123");
+        when(utilisateurRepository.findByEmail("yassine@mail.be"))
+                .thenReturn(Optional.of(existant));
+
+        assertThat(utilisateurService.verifier(
+                new ConnexionRequete("  Yassine@Mail.BE ", "motdepasse123"))).contains(existant);
     }
 }
