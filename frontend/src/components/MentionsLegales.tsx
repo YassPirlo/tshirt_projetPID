@@ -30,7 +30,7 @@ function MentionsLegales({ onAccueil, onConfidentialite, onCookies }: Props) {
 
       <h2>Un projet d'école</h2>
       <p>
-        TshirtShop est un <strong>projet pédagogique</strong> réalisé dans le
+        FACE est un <strong>projet pédagogique</strong> réalisé dans le
         cadre d'un cours. Ce n'est pas une vraie boutique :{' '}
         <strong>aucun produit n'est vendu</strong>, les prix et les articles
         sont fictifs, et aucune commande ne peut être passée.

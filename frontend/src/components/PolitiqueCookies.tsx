@@ -38,7 +38,7 @@ function PolitiqueCookies({ consentement, onAccueil, onModifierChoix }: Props) {
         compter les visites : pour ceux-là, nous demandons votre accord.
       </p>
 
-      <h2>Ce que TshirtShop enregistre</h2>
+      <h2>Ce que FACE enregistre</h2>
       <div className="tableau-defilant">
         <table>
           <thead>
@@ -52,10 +52,27 @@ function PolitiqueCookies({ consentement, onAccueil, onModifierChoix }: Props) {
           <tbody>
             <tr>
               <td>
-                <code>tshirtshop-consentement</code>
+                <code>face-consentement</code>
               </td>
               <td>Se souvenir de vos choix sur les cookies</td>
               <td>{dureeEnMois} mois</td>
+              <td>Nécessaire, sans consentement</td>
+            </tr>
+            {/* Déposé par le serveur à la connexion (US5). Il ne contient
+                qu'un identifiant aléatoire : les informations du compte
+                restent sur le serveur. */}
+            <tr>
+              <td>
+                <code>JSESSIONID</code>
+              </td>
+              <td>
+                Vous garder connecté pendant votre visite. Il n'est déposé que
+                si vous vous connectez à votre compte.
+              </td>
+              <td>
+                Jusqu'à la fermeture du navigateur ; la connexion expire après
+                30 minutes sans activité
+              </td>
               <td>Nécessaire, sans consentement</td>
             </tr>
           </tbody>

@@ -7,7 +7,7 @@ import {
   VERSION_CONSENTEMENT,
 } from './consentement'
 
-const CLE = 'tshirtshop-consentement'
+const CLE = 'face-consentement'
 const unJour = 86_400_000
 
 describe('consentement aux cookies', () => {

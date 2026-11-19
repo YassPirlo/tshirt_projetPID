@@ -35,18 +35,35 @@ function PolitiqueConfidentialite({ onAccueil, onCookies }: Props) {
 
       <h2>Quelles données collectons-nous aujourd'hui ?</h2>
       <p>
-        <strong>Aucune donnée personnelle.</strong> Le site ne propose pas
-        encore de compte, de formulaire ni de commande. Il n'utilise aucun
-        cookie publicitaire et ne fait appel à aucun service extérieur : la
-        police de caractères et les images sont hébergées avec le site.
+        <strong>Si vous naviguez sans compte, aucune donnée personnelle.</strong>{' '}
+        Le site n'utilise aucun cookie publicitaire et ne fait appel à aucun
+        service extérieur : la police de caractères et les images sont
+        hébergées avec le site.
+      </p>
+      <p>
+        <strong>Si vous créez un compte</strong>, nous enregistrons votre
+        adresse e-mail, votre nom, votre prénom, votre mot de passe et la date
+        de création du compte. Ils servent uniquement à vous identifier quand
+        vous vous connectez et à afficher votre profil (article 6.1.b du RGPD :
+        ces données sont nécessaires au service que vous demandez). Ils sont
+        conservés tant que votre compte existe ; pour le supprimer, écrivez à
+        l'adresse ci-dessus.
+      </p>
+      <p>
+        Votre mot de passe n'est jamais enregistré tel quel : nous n'en gardons
+        qu'une empreinte (un <em>hachage</em>). Contrairement à un chiffrement,
+        une empreinte ne peut pas être reconvertie en mot de passe, ni par nous
+        ni par quelqu'un qui accéderait à la base de données. Elle permet
+        seulement de vérifier, à la connexion, que le mot de passe tapé est le
+        bon.
       </p>
       <p>
         Pour vous afficher une page, le serveur reçoit forcément l'adresse IP de
         votre appareil. Il s'en sert pour répondre, puis ne la conserve pas.
       </p>
       <p>
-        Votre navigateur garde seulement votre choix sur les cookies, sur votre
-        appareil. Le détail est dans la page{' '}
+        Votre navigateur garde votre choix sur les cookies et, si vous êtes
+        connecté, un cookie de session. Le détail est dans la page{' '}
         <button type="button" className="lien" onClick={onCookies}>
           Cookies
         </button>
@@ -55,13 +72,11 @@ function PolitiqueConfidentialite({ onAccueil, onCookies }: Props) {
 
       <h2>Et quand vous pourrez commander ?</h2>
       <p>
-        La création de compte, le panier, le paiement et la livraison arriveront
-        dans les prochaines versions. Nous demanderons alors uniquement ce qui
-        est nécessaire pour traiter votre commande : nom, adresse e-mail,
-        adresse de livraison et historique de vos commandes. Votre mot de passe
-        sera enregistré sous une forme chiffrée que personne ne peut relire, et
-        vos données de paiement seront traitées par le prestataire de paiement,
-        pas par TshirtShop.
+        Le panier, le paiement et la livraison arriveront dans les prochaines
+        versions. Nous demanderons alors uniquement ce qui est nécessaire pour
+        traiter votre commande : adresse de livraison et historique de vos
+        commandes, en plus des données de votre compte. Vos données de paiement
+        seront traitées par le prestataire de paiement, pas par FACE.
       </p>
       <p>
         Ces données serviront à exécuter votre commande (article 6.1.b du RGPD)
