@@ -42,7 +42,7 @@ function demarrerFauxBack({ session }: { session: boolean }) {
 // toutes les pages.
 const entete = () => within(screen.getByRole('banner'))
 
-describe('« Bienvenue, <prénom> » (US4, US5)', () => {
+describe('« Bienvenue, <prénom> » et « Créer un compte » dans l’en-tête (US4, US5)', () => {
   beforeEach(() => {
     window.scrollTo = vi.fn()
   })
@@ -55,6 +55,32 @@ describe('« Bienvenue, <prénom> » (US4, US5)', () => {
       await entete().findByRole('button', { name: 'Se connecter' }),
     ).toBeInTheDocument()
     expect(entete().queryByText(/Bienvenue/)).not.toBeInTheDocument()
+  })
+
+  // US5 : « l'inscription est possible depuis n'importe quelle page »
+  it('propose « Créer un compte » à un visiteur, sur n’importe quelle page', async () => {
+    demarrerFauxBack({ session: false })
+    rendreApp('/mentions-legales')
+    const utilisateur = userEvent.setup()
+
+    await utilisateur.click(
+      await entete().findByRole('button', { name: 'Créer un compte' }),
+    )
+
+    expect(window.location.pathname).toBe('/inscription')
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Créer un compte' }),
+    ).toBeInTheDocument()
+  })
+
+  it('ne propose plus « Créer un compte » à un membre connecté', async () => {
+    demarrerFauxBack({ session: true })
+    rendreApp('/')
+
+    expect(await entete().findByText('Bienvenue, Yassine')).toBeInTheDocument()
+    expect(
+      entete().queryByRole('button', { name: 'Créer un compte' }),
+    ).not.toBeInTheDocument()
   })
 
   it('apparaît juste après la connexion, puis sur les autres pages', async () => {

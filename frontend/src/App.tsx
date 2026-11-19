@@ -87,7 +87,7 @@ function App() {
 
   // Qui est connecté : fourni par ContexteAuth, partagé avec l'en-tête
   // et les pages de compte.
-  const { utilisateur } = useAuth()
+  const { utilisateur, chargement: verificationSession } = useAuth()
 
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
@@ -272,6 +272,8 @@ function App() {
         // US4 à US7 : l'icône « Mon compte » devient active
         onCompte={ouvrirCompte}
         utilisateur={utilisateur}
+        verificationSession={verificationSession}
+        onInscription={() => navigate(chemins.inscription)}
       />
 
       <main id="contenu" ref={contenu} tabIndex={-1}>

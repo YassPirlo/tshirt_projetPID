@@ -16,6 +16,10 @@ type Props = {
   onCompte: () => void
   // Le compte connecté, ou null pour un visiteur
   utilisateur: Utilisateur | null
+  // true tant que le site vérifie s'il reste une session (au démarrage)
+  verificationSession: boolean
+  // US5 : mène au formulaire d'inscription
+  onInscription: () => void
 }
 
 // Actions encore sans US : favoris et panier (US8, US9).
@@ -37,6 +41,8 @@ function EnTete({
   onAccueil,
   onCompte,
   utilisateur,
+  verificationSession,
+  onInscription,
 }: Props) {
   const connecte = utilisateur !== null
 
@@ -81,10 +87,24 @@ function EnTete({
             est présent sur toutes les pages, d'où sa place ici.
             Le prénom vient de la saisie de l'utilisateur : React l'échappe,
             il ne peut donc pas y glisser de HTML. */}
-        {utilisateur && (
+        {utilisateur ? (
           <p className="entete-bienvenue">
             Bienvenue, {utilisateur.prenom}
           </p>
+        ) : (
+          // US5 : « l'inscription est possible depuis n'importe quelle
+          // page ». Masqué pendant la vérification de la session, sinon
+          // un membre déjà connecté verrait le lien clignoter au
+          // chargement avant que « Bienvenue » ne le remplace.
+          !verificationSession && (
+            <button
+              type="button"
+              className="lien entete-inscription"
+              onClick={onInscription}
+            >
+              Créer un compte
+            </button>
+          )
         )}
 
         <ul className="entete-actions">
