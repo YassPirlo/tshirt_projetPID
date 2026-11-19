@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-// Tests du socle de session, partagé par US5, US6 et US7.
+// Tests du socle de session, partagé par US4, US6 et US7.
 //
 // MockHttpServletRequest est une vraie implémentation de requête HTTP
 // fournie par spring-test : pas besoin de démarrer un serveur.

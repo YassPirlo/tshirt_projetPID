@@ -18,9 +18,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// US5 de bout en bout : vrai service, vrai BCrypt, vraie base H2.
+// US4 de bout en bout : vrai service, vrai BCrypt, vraie base H2.
 //
-// Fichier séparé d'ApiIntegrationTest pour que l'US5 ne touche à aucun
+// Fichier séparé d'ApiIntegrationTest pour que l'US4 ne touche à aucun
 // fichier partagé avec les autres US.
 //
 // @Transactional : le compte créé avant chaque test est annulé à la fin du

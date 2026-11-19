@@ -51,7 +51,7 @@ class UtilisateurServiceTest {
         return capteur.getValue();
     }
 
-    // US4
+    // US5
     @Test
     void enregistreLeMotDePasseHacheEtJamaisEnClair() {
         when(utilisateurRepository.findByEmail("yassine@mail.be")).thenReturn(Optional.empty());
@@ -100,7 +100,7 @@ class UtilisateurServiceTest {
         assertThat(capturerUtilisateurEnregistre().getEmail()).isEqualTo("yassine@mail.be");
     }
 
-    // US5 et US7 : la recherche normalise aussi, sinon un utilisateur inscrit
+    // US4 et US6 : la recherche normalise aussi, sinon un utilisateur inscrit
     // en minuscules ne pourrait pas se connecter en tapant une majuscule.
     @Test
     void trouveUnCompteQuelleQueSoitLaCasseDeLEmail() {
@@ -118,7 +118,7 @@ class UtilisateurServiceTest {
         assertThat(utilisateurService.trouverParEmail("inconnu@mail.be")).isEmpty();
     }
 
-    // US7 : le profil part de l'id stocké en session.
+    // US6 : le profil part de l'id stocké en session.
     @Test
     void trouveUnCompteParSonId() {
         Utilisateur existant = new Utilisateur();
@@ -136,7 +136,7 @@ class UtilisateurServiceTest {
         assertThat(utilisateurService.trouverParId(42L)).isEmpty();
     }
 
-    // US5 : un compte en base dont le mot de passe est réellement haché
+    // US4 : un compte en base dont le mot de passe est réellement haché
     // par BCrypt, comme le ferait inscrire().
     private Utilisateur compteAvecMotDePasse(String motDePasse) {
         return new Utilisateur("yassine@mail.be", passwordEncoder.encode(motDePasse),

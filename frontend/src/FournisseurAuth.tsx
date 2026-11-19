@@ -2,8 +2,8 @@
 // (US4 à US7). Le contexte et le hook useAuth sont dans ContexteAuth.ts.
 //
 // CE QUE CE FICHIER NE FAIT PAS :
-// il ne contient ni l'appel d'inscription (US4), ni celui de connexion
-// (US5), ni celui de déconnexion (US6). Chaque page appelle son endpoint
+// il ne contient ni l'appel d'inscription (US5), ni celui de connexion
+// (US4), ni celui de déconnexion (US7). Chaque page appelle son endpoint
 // elle-même, puis prévient le contexte avec definirUtilisateur() ou
 // oublierUtilisateur(). La logique de chaque US reste dans sa page.
 

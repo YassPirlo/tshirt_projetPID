@@ -34,7 +34,8 @@ describe('getCategories (US1)', () => {
     const categories = await getCategories()
 
     // credentials: 'include' est vérifié explicitement : sans lui, le
-    // cookie de session ne partirait pas et les US5 à US7 casseraient.
+    // cookie de session ne partirait pas, et la connexion, le profil et
+    // la déconnexion (US4, US6, US7) casseraient.
     expect(faux).toHaveBeenCalledWith('/api/categories', {
       credentials: 'include',
       signal: undefined,

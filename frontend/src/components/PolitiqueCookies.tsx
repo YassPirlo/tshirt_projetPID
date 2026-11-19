@@ -58,7 +58,7 @@ function PolitiqueCookies({ consentement, onAccueil, onModifierChoix }: Props) {
               <td>{dureeEnMois} mois</td>
               <td>Nécessaire, sans consentement</td>
             </tr>
-            {/* Déposé par le serveur à la connexion (US5). Il ne contient
+            {/* Déposé par le serveur à la connexion (US4). Il ne contient
                 qu'un identifiant aléatoire : les informations du compte
                 restent sur le serveur. */}
             <tr>

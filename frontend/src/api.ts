@@ -43,8 +43,8 @@ export type Utilisateur = {
 }
 
 // Erreur qui conserve le code HTTP, pour que l'appelant puisse réagir
-// différemment selon le cas : 409 = email déjà pris (US4),
-// 401 = identifiants refusés (US5), 404 = pas connecté (US7).
+// différemment selon le cas : 409 = email déjà pris (US5),
+// 401 = identifiants refusés (US4) ou personne de connecté (profil, US6).
 export class ErreurHttp extends Error {
   readonly statut: number
 
@@ -68,8 +68,8 @@ async function lireJson<T>(chemin: string, signal?: AbortSignal): Promise<T> {
   return reponse.json()
 }
 
-// Envoie un POST en JSON. Utilisé par l'inscription (US4), la connexion
-// (US5) et la déconnexion (US6).
+// Envoie un POST en JSON. Utilisé par l'inscription (US5), la connexion
+// (US4) et la déconnexion (US7).
 //
 // Le back peut répondre sans corps (déconnexion) : on renvoie alors null,
 // d'où le type de retour T | null.
@@ -119,7 +119,7 @@ export const getProduitsDeCategorie = (id: number, signal?: AbortSignal) =>
 export const getProduit = (id: number, signal?: AbortSignal) =>
   lireJson<Produit>(`/api/produits/${id}`, signal)
 
-// US7 : le compte actuellement connecté, d'après le cookie de session.
+// US6 : le compte actuellement connecté, d'après le cookie de session.
 // Lève une ErreurHttp 401 si personne n'est connecté : c'est ce que
 // ContexteAuth utilise au démarrage pour savoir s'il reste une session.
 export const getProfil = (signal?: AbortSignal) =>
