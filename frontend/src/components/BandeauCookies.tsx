@@ -24,7 +24,7 @@ function BandeauCookies({
       <div className="cookies-contenu">
         <h2 id="titre-cookies">Vos choix sur les cookies</h2>
         <p>
-          TshirtShop utilise uniquement ce qui est nécessaire au fonctionnement
+          FACE utilise uniquement ce qui est nécessaire au fonctionnement
           du site. Avec votre accord, nous pourrons aussi mesurer la
           fréquentation pour améliorer la boutique. Vous pouvez changer d'avis à
           tout moment avec le lien «&nbsp;Gérer les cookies&nbsp;» en bas de page.{' '}

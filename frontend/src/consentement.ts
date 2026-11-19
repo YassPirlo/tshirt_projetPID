@@ -13,7 +13,7 @@ export type Consentement = {
   version: number
 }
 
-const CLE = 'tshirtshop-consentement'
+const CLE = 'face-consentement'
 
 // À augmenter si la liste des traceurs change : le bandeau réapparaît
 // et chacun refait son choix en connaissant les nouveaux traceurs
