@@ -82,7 +82,10 @@ describe('Inscription (US5 du backlog)', () => {
     // Le bon endpoint, en POST, avec les quatre champs
     const appel = faux.mock.calls.find(([url]) => url === '/api/inscription')
     expect(appel).toBeDefined()
-    const options = appel![1] as unknown as RequestInit
+    // Le faux fetch est déclaré avec un seul paramètre (url) : TypeScript
+    // croit donc qu'il n'y a pas de deuxième élément. On lui précise la
+    // forme réelle d'un appel à fetch : (url, options).
+    const options = (appel as unknown as [string, RequestInit])[1]
     expect(options.method).toBe('POST')
     expect(JSON.parse(options.body as string)).toEqual({
       email: 'loic@mail.be',
