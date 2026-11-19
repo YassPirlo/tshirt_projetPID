@@ -25,6 +25,11 @@ CREATE TABLE utilisateur (
   mot_de_passe VARCHAR(60) NOT NULL,
   nom VARCHAR(100) NOT NULL,
   prenom VARCHAR(100) NOT NULL,
+  -- US5 : adresse demandee a l'inscription. code_postal en texte : ce
+  -- n'est pas un nombre (pas de calcul, lettres possibles a l'etranger).
+  adresse VARCHAR(255) NOT NULL,
+  code_postal VARCHAR(10) NOT NULL,
+  ville VARCHAR(100) NOT NULL,
   date_inscription DATETIME NOT NULL
 );
 

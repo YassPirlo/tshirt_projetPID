@@ -1,4 +1,4 @@
-// Création de compte : US5 du backlog (« US4 » dans le plan de l'équipe).
+// US5 — Création de compte.
 //
 // Un formulaire contrôlé : chaque champ est relié à un état React, ce qui
 // permet de lire les valeurs à l'envoi et de vider l'erreur dès qu'on
@@ -37,6 +37,10 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
   const [motDePasse, setMotDePasse] = useState('')
   const [nom, setNom] = useState('')
   const [prenom, setPrenom] = useState('')
+  // US5 : le backlog demande aussi l'adresse
+  const [adresse, setAdresse] = useState('')
+  const [codePostal, setCodePostal] = useState('')
+  const [ville, setVille] = useState('')
 
   // Deux erreurs séparées : celle de l'email s'affiche sous le champ email,
   // l'autre en haut du formulaire.
@@ -57,6 +61,9 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
         motDePasse,
         nom,
         prenom,
+        adresse,
+        codePostal,
+        ville,
       })
       if (compte) definirUtilisateur(compte)
       onInscrit()
@@ -108,6 +115,48 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
             maxLength={100}
             value={nom}
             onChange={(e) => setNom(e.target.value)}
+          />
+        </label>
+
+        {/* autoComplete : le navigateur peut remplir l'adresse enregistrée
+            de l'utilisateur, en respectant les noms standard. */}
+        <label>
+          Adresse
+          <input
+            type="text"
+            name="adresse"
+            autoComplete="street-address"
+            required
+            maxLength={255}
+            value={adresse}
+            onChange={(e) => setAdresse(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Code postal
+          <input
+            type="text"
+            name="codePostal"
+            autoComplete="postal-code"
+            inputMode="numeric"
+            required
+            maxLength={10}
+            value={codePostal}
+            onChange={(e) => setCodePostal(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Ville
+          <input
+            type="text"
+            name="ville"
+            autoComplete="address-level2"
+            required
+            maxLength={100}
+            value={ville}
+            onChange={(e) => setVille(e.target.value)}
           />
         </label>
 

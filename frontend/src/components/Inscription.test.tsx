@@ -30,6 +30,9 @@ async function remplirEtEnvoyer() {
   const user = userEvent.setup()
   await user.type(screen.getByLabelText('Prénom'), 'Loïc')
   await user.type(screen.getByLabelText('Nom'), 'Rossel')
+  await user.type(screen.getByLabelText('Adresse'), '12 rue des Tests')
+  await user.type(screen.getByLabelText('Code postal'), '1000')
+  await user.type(screen.getByLabelText('Ville'), 'Bruxelles')
   await user.type(screen.getByLabelText('Email'), 'loic@mail.be')
   await user.type(
     screen.getByLabelText('Mot de passe (8 caractères minimum)'),
@@ -53,7 +56,7 @@ function afficher(onInscrit = vi.fn()) {
 }
 
 describe('Inscription (US5 du backlog)', () => {
-  it('affiche les quatre champs du formulaire', () => {
+  it('affiche les sept champs du formulaire', () => {
     fauxBack(201, {})
     afficher()
 
@@ -63,6 +66,10 @@ describe('Inscription (US5 du backlog)', () => {
     expect(screen.getByLabelText('Prénom')).toBeInTheDocument()
     expect(screen.getByLabelText('Nom')).toBeInTheDocument()
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
+    // US5 : adresse, code postal et ville sont demandés par le backlog
+    expect(screen.getByLabelText('Adresse')).toBeRequired()
+    expect(screen.getByLabelText('Code postal')).toBeRequired()
+    expect(screen.getByLabelText('Ville')).toBeRequired()
     expect(
       screen.getByLabelText('Mot de passe (8 caractères minimum)'),
     ).toHaveAttribute('type', 'password')
@@ -74,12 +81,15 @@ describe('Inscription (US5 du backlog)', () => {
       email: 'loic@mail.be',
       nom: 'Rossel',
       prenom: 'Loïc',
+      adresse: '12 rue des Tests',
+      codePostal: '1000',
+      ville: 'Bruxelles',
     })
     const onInscrit = afficher()
 
     await remplirEtEnvoyer()
 
-    // Le bon endpoint, en POST, avec les quatre champs
+    // Le bon endpoint, en POST, avec les sept champs
     const appel = faux.mock.calls.find(([url]) => url === '/api/inscription')
     expect(appel).toBeDefined()
     // Le faux fetch est déclaré avec un seul paramètre (url) : TypeScript
@@ -92,6 +102,9 @@ describe('Inscription (US5 du backlog)', () => {
       motDePasse: 'motdepasse123',
       nom: 'Rossel',
       prenom: 'Loïc',
+      adresse: '12 rue des Tests',
+      codePostal: '1000',
+      ville: 'Bruxelles',
     })
 
     expect(await screen.findByText('Bienvenue, Loïc')).toBeInTheDocument()

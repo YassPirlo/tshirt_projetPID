@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,7 +41,8 @@ class ConnexionIntegrationTest {
     @BeforeEach
     void creerUnCompte() {
         utilisateurService.inscrire(new InscriptionRequete(
-                "yassine@mail.be", "motdepasse123", "Vitullo", "Yassine"));
+                "yassine@mail.be", "motdepasse123", "Vitullo", "Yassine",
+                "12 rue des Tests", "1000", "Bruxelles"));
     }
 
     private MvcResult seConnecter(String email, String motDePasse, int statutAttendu)
@@ -71,5 +74,20 @@ class ConnexionIntegrationTest {
 
         assertThat(emailInconnu.getResponse().getContentAsString())
                 .isEqualTo(mauvaisMotDePasse.getResponse().getContentAsString());
+    }
+
+    // Connexion (US4) puis profil : le profil doit relire la session que la
+    // connexion a ouverte. C'est ce qui garde « Bienvenue, <prénom> » après
+    // un F5. Si les deux n'utilisaient pas le même nom d'attribut de session,
+    // chacun passerait ses propres tests et seul ce test échouerait.
+    @Test
+    void apresLaConnexionLeProfilRetrouveLeCompte() throws Exception {
+        MvcResult connexion = seConnecter("yassine@mail.be", "motdepasse123", 200);
+        MockHttpSession session = (MockHttpSession) connexion.getRequest().getSession(false);
+
+        mockMvc.perform(get("/api/profil").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.prenom").value("Yassine"))
+                .andExpect(jsonPath("$.ville").value("Bruxelles"));
     }
 }

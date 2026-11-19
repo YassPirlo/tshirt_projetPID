@@ -1,49 +1,69 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ErreurReponse;
+import com.example.demo.dto.UtilisateurReponse;
+import com.example.demo.service.UtilisateurService;
+import com.example.demo.session.SessionUtilisateur;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// US7 — Mon profil, et US6 — Déconnexion. SQUELETTE À COMPLÉTER.
-//
-// Ce fichier n'appartient qu'à US6 + US7 : personne d'autre n'y touche.
+// Le compte connecté (profil, base de l'US6) et la déconnexion (US7).
 //
 // Les deux endpoints sont ensemble parce qu'ils lisent et détruisent la même
 // session, et qu'ils sont portés par la même page du front (Profil.tsx).
-//
-// Tout ce qu'il faut côté service existe déjà : utilisez
-// UtilisateurService.trouverParId(). Vous n'avez donc AUCUNE raison de
-// modifier UtilisateurService.java — ce fichier est à US5, qui y ajoute la
-// vérification du mot de passe. Y toucher vous garantit un conflit.
-//
-// US7 — @GetMapping("/api/profil"), avec HttpServletRequest en paramètre :
-//  1. SessionUtilisateur.idConnecte(requete) ;
-//  2. Optional vide -> 401 ; sinon utilisateurService.trouverParId(id) et
-//     répondre 200 avec UtilisateurReponse.depuis(...).
-//
-// Pourquoi relire la base au lieu de garder l'objet en session : voir le
-// commentaire de SessionUtilisateur. Et pensez au cas du compte supprimé
-// entre-temps — l'id est en session mais findById renvoie vide.
-//
-// C'est cet endpoint que le front appelle au démarrage pour savoir s'il
-// reste une session (voir FournisseurAuth.tsx). Il doit donc répondre 401
-// proprement pour un visiteur anonyme, sans erreur serveur : c'est le cas
-// NORMAL, pas une anomalie. À ne pas logger en warning.
-//
-// US6 — @PostMapping("/api/deconnexion") :
-//  1. SessionUtilisateur.fermer(requete) ;
-//  2. 204 No Content (rien à renvoyer ; le front gère déjà un corps vide).
-//
-// POST et non GET : une déconnexion modifie l'état du serveur. En GET, une
-// simple balise <img src="/api/deconnexion"> sur n'importe quel site
-// déconnecterait nos visiteurs.
-//
-// POINT NOTÉ : c'est bien le SERVEUR qui invalide la session. Se contenter
-// d'oublier l'utilisateur côté front laisserait la session active ici, donc
-// le compte resterait accessible après un F5.
-//
-// À tester :
-//  - profil : 200 avec session valide, 401 sans session
-//  - déconnexion : 204, puis le profil répond 401 juste après
-//  - déconnexion sans être connecté : 204 aussi, pas d'erreur
 @RestController
 public class ProfilController {
+
+    private final UtilisateurService utilisateurService;
+
+    public ProfilController(UtilisateurService utilisateurService) {
+        this.utilisateurService = utilisateurService;
+    }
+
+    // GET /api/profil : qui est connecté ?
+    //
+    // C'est cet endpoint que le front appelle AU DÉMARRAGE (FournisseurAuth)
+    // pour savoir s'il reste une session. Sans lui, un F5 fait oublier au
+    // front qui est connecté, et « Bienvenue, <prénom> » (US4, US5)
+    // disparaît alors que la session existe toujours côté serveur.
+    //
+    // 401 pour un visiteur anonyme : c'est le cas NORMAL (chaque visiteur
+    // passe par là au chargement du site), pas une anomalie. Rien à logger.
+    @GetMapping("/api/profil")
+    public ResponseEntity<?> profil(HttpServletRequest requete) {
+        return SessionUtilisateur.idConnecte(requete)
+                // On relit la base à chaque appel plutôt que de garder le
+                // compte en session : le profil reflète toujours l'état réel.
+                .flatMap(utilisateurService::trouverParId)
+                .<ResponseEntity<?>>map(utilisateur ->
+                        ResponseEntity.ok(UtilisateurReponse.depuis(utilisateur)))
+                // Deux cas donnent 401 : pas de session, ou une session dont
+                // le compte a été supprimé entre-temps. Dans les deux cas,
+                // personne n'est connecté.
+                .orElseGet(() -> ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErreurReponse("Vous n'êtes pas connecté")));
+    }
+
+    // US7 — Déconnexion. SQUELETTE À COMPLÉTER (Laurine).
+    //
+    // @PostMapping("/api/deconnexion"), avec HttpServletRequest en paramètre :
+    //  1. SessionUtilisateur.fermer(requete) ;
+    //  2. 204 No Content (rien à renvoyer ; le front gère déjà un corps vide).
+    //
+    // POST et non GET : une déconnexion modifie l'état du serveur. En GET, une
+    // simple balise <img src="/api/deconnexion"> sur n'importe quel site
+    // déconnecterait nos visiteurs.
+    //
+    // POINT NOTÉ : c'est bien le SERVEUR qui invalide la session. Se contenter
+    // d'oublier l'utilisateur côté front laisserait la session active ici, donc
+    // le compte resterait accessible après un F5.
+    //
+    // À tester :
+    //  - déconnexion : 204, puis GET /api/profil répond 401 juste après
+    //  - déconnexion sans être connecté : 204 aussi, pas d'erreur
 }

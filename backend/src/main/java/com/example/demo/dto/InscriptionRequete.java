@@ -21,8 +21,12 @@ public record InscriptionRequete(
 
         // 8 caractères minimum. Le maximum compte aussi : BCrypt ignore
         // au-delà de 72 octets, autant refuser clairement.
+        // Deux @Size séparés pour deux messages justes : un seul @Size
+        // affichait « au moins 8 caractères » même pour un mot de passe
+        // trop long.
         @NotBlank(message = "Le mot de passe est obligatoire")
-        @Size(min = 8, max = 72, message = "Le mot de passe doit faire au moins 8 caractères")
+        @Size(min = 8, message = "Le mot de passe doit faire au moins 8 caractères")
+        @Size(max = 72, message = "Le mot de passe ne peut pas dépasser 72 caractères")
         String motDePasse,
 
         @NotBlank(message = "Le nom est obligatoire")
@@ -31,5 +35,20 @@ public record InscriptionRequete(
 
         @NotBlank(message = "Le prénom est obligatoire")
         @Size(max = 100, message = "Le prénom ne peut pas dépasser 100 caractères")
-        String prenom) {
+        String prenom,
+
+        // US5 : le backlog demande aussi adresse, code postal et ville,
+        // tous obligatoires. Pas de format imposé au code postal : le site
+        // ne se limite pas à la Belgique.
+        @NotBlank(message = "L'adresse est obligatoire")
+        @Size(max = 255, message = "L'adresse ne peut pas dépasser 255 caractères")
+        String adresse,
+
+        @NotBlank(message = "Le code postal est obligatoire")
+        @Size(max = 10, message = "Le code postal ne peut pas dépasser 10 caractères")
+        String codePostal,
+
+        @NotBlank(message = "La ville est obligatoire")
+        @Size(max = 100, message = "La ville ne peut pas dépasser 100 caractères")
+        String ville) {
 }

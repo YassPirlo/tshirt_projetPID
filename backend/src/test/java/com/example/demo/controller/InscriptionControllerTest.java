@@ -40,7 +40,10 @@ class InscriptionControllerTest {
               "email": "loic@mail.be",
               "motDePasse": "motdepasse123",
               "nom": "Rossel",
-              "prenom": "Loïc"
+              "prenom": "Loïc",
+              "adresse": "12 rue des Tests",
+              "codePostal": "1000",
+              "ville": "Bruxelles"
             }
             """;
 
@@ -48,7 +51,8 @@ class InscriptionControllerTest {
     // L'id est normalement donné par la base : on le pose à la main.
     private Utilisateur compteEnregistre() {
         Utilisateur utilisateur = new Utilisateur(
-                "loic@mail.be", "$2a$10$hachageBcryptFictif", "Rossel", "Loïc");
+                "loic@mail.be", "$2a$10$hachageBcryptFictif", "Rossel", "Loïc",
+                "12 rue des Tests", "1000", "Bruxelles");
         ReflectionTestUtils.setField(utilisateur, "id", 7L);
         return utilisateur;
     }
@@ -121,13 +125,40 @@ class InscriptionControllerTest {
                                   "email": "",
                                   "motDePasse": "motdepasse123",
                                   "nom": "Rossel",
-                                  "prenom": "Loïc"
+                                  "prenom": "Loïc",
+                                  "adresse": "12 rue des Tests",
+                                  "codePostal": "1000",
+                                  "ville": "Bruxelles"
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists());
 
         verify(utilisateurService, never()).inscrire(any());
+    }
+
+    // US5 : l'adresse est obligatoire, comme le demande le backlog.
+    @Test
+    void repond400SiLAdresseManque() throws Exception {
+        mockMvc.perform(post("/api/inscription")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORPS_VALIDE.replace("12 rue des Tests", "")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("L'adresse est obligatoire"));
+
+        verify(utilisateurService, never()).inscrire(any());
+    }
+
+    // Un mot de passe trop LONG doit dire qu'il est trop long, pas
+    // « au moins 8 caractères ».
+    @Test
+    void repond400AvecLeBonMessageSiLeMotDePasseEstTropLong() throws Exception {
+        mockMvc.perform(post("/api/inscription")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORPS_VALIDE.replace("motdepasse123", "a".repeat(73))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("Le mot de passe ne peut pas dépasser 72 caractères"));
     }
 
     // Mot de passe trop court : preuve que @Valid est bien présent.
@@ -140,7 +171,10 @@ class InscriptionControllerTest {
                                   "email": "loic@mail.be",
                                   "motDePasse": "ab",
                                   "nom": "Rossel",
-                                  "prenom": "Loïc"
+                                  "prenom": "Loïc",
+                                  "adresse": "12 rue des Tests",
+                                  "codePostal": "1000",
+                                  "ville": "Bruxelles"
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
