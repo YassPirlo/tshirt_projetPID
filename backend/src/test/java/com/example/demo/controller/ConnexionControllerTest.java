@@ -44,7 +44,8 @@ class ConnexionControllerTest {
     // pose par réflexion, comme le ferait Hibernate.
     private Utilisateur compteEnregistre() {
         Utilisateur utilisateur = new Utilisateur("yassine@mail.be",
-                "$2a$10$hachageFictifPourLeTestDuController", "Vitullo", "Yassine");
+                "$2a$10$hachageFictifPourLeTestDuController", "Vitullo", "Yassine",
+                "12 rue des Tests", "1000", "Bruxelles");
         ReflectionTestUtils.setField(utilisateur, "id", 7L);
         return utilisateur;
     }

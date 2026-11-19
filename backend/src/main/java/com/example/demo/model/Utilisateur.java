@@ -34,6 +34,19 @@ public class Utilisateur {
     @Column(nullable = false, length = 100)
     private String prenom;
 
+    // US5 : adresse demandée à l'inscription (backlog). Elle servira aussi
+    // d'adresse de livraison quand les commandes arriveront.
+    @Column(nullable = false)
+    private String adresse;
+
+    // Texte et non nombre : un code postal n'est pas une quantité (pas de
+    // calcul dessus) et certains pays y mettent des lettres ou un zéro en tête.
+    @Column(nullable = false, length = 10)
+    private String codePostal;
+
+    @Column(nullable = false, length = 100)
+    private String ville;
+
     // Renseignée au moment de l'inscription (colonne "date_inscription")
     @Column(nullable = false)
     private LocalDateTime dateInscription;
@@ -43,11 +56,15 @@ public class Utilisateur {
     public Utilisateur() {
     }
 
-    public Utilisateur(String email, String motDePasse, String nom, String prenom) {
+    public Utilisateur(String email, String motDePasse, String nom, String prenom,
+                       String adresse, String codePostal, String ville) {
         this.email = email;
         this.motDePasse = motDePasse;
         this.nom = nom;
         this.prenom = prenom;
+        this.adresse = adresse;
+        this.codePostal = codePostal;
+        this.ville = ville;
         this.dateInscription = LocalDateTime.now();
     }
 
@@ -85,6 +102,30 @@ public class Utilisateur {
 
     public void setPrenom(String prenom) {
         this.prenom = prenom;
+    }
+
+    public String getAdresse() {
+        return adresse;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
+    }
+
+    public String getCodePostal() {
+        return codePostal;
+    }
+
+    public void setCodePostal(String codePostal) {
+        this.codePostal = codePostal;
+    }
+
+    public String getVille() {
+        return ville;
+    }
+
+    public void setVille(String ville) {
+        this.ville = ville;
     }
 
     public LocalDateTime getDateInscription() {

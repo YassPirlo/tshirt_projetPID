@@ -12,7 +12,12 @@ public record UtilisateurReponse(
         Long id,
         String email,
         String nom,
-        String prenom) {
+        String prenom,
+        // Les données du compte, que le profil (US6) affiche et fera modifier.
+        // Ce sont celles de l'utilisateur lui-même : il les voit, rien de plus.
+        String adresse,
+        String codePostal,
+        String ville) {
 
     // Méthode de conversion : entité -> réponse.
     // Centralisée ici, pour qu'aucun controller n'ait à y penser.
@@ -21,6 +26,9 @@ public record UtilisateurReponse(
                 utilisateur.getId(),
                 utilisateur.getEmail(),
                 utilisateur.getNom(),
-                utilisateur.getPrenom());
+                utilisateur.getPrenom(),
+                utilisateur.getAdresse(),
+                utilisateur.getCodePostal(),
+                utilisateur.getVille());
     }
 }

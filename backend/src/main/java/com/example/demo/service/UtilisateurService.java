@@ -46,7 +46,10 @@ public class UtilisateurService {
                 email,
                 hachage,
                 requete.nom().trim(),
-                requete.prenom().trim());
+                requete.prenom().trim(),
+                requete.adresse().trim(),
+                requete.codePostal().trim(),
+                requete.ville().trim());
 
         return utilisateurRepository.save(utilisateur);
     }

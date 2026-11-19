@@ -40,6 +40,10 @@ export type Utilisateur = {
   email: string
   nom: string
   prenom: string
+  // US5 : demandés à l'inscription
+  adresse: string
+  codePostal: string
+  ville: string
 }
 
 // Erreur qui conserve le code HTTP, pour que l'appelant puisse réagir

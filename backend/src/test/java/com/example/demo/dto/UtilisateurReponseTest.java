@@ -14,18 +14,20 @@ class UtilisateurReponseTest {
     @Test
     void neContientAucuneTraceDuMotDePasse() {
         Utilisateur utilisateur = new Utilisateur(
-                "yassine@mail.be", "$2a$10$hachageBCryptFactice", "Vitullo", "Yassine");
+                "yassine@mail.be", "$2a$10$hachageBCryptFactice", "Vitullo", "Yassine",
+                "12 rue des Tests", "1000", "Bruxelles");
 
         UtilisateurReponse reponse = UtilisateurReponse.depuis(utilisateur);
 
         assertThat(reponse.email()).isEqualTo("yassine@mail.be");
         assertThat(reponse.nom()).isEqualTo("Vitullo");
         assertThat(reponse.prenom()).isEqualTo("Yassine");
+        assertThat(reponse.ville()).isEqualTo("Bruxelles");
 
         // Aucun champ du record ne doit s'appeler "motDePasse"
         assertThat(UtilisateurReponse.class.getRecordComponents())
                 .extracting(composant -> composant.getName())
-                .containsExactly("id", "email", "nom", "prenom");
+                .containsExactly("id", "email", "nom", "prenom", "adresse", "codePostal", "ville");
 
         // Et le hachage ne doit apparaître nulle part dans sa représentation
         assertThat(reponse.toString()).doesNotContain("$2a$");

@@ -41,7 +41,8 @@ class UtilisateurServiceTest {
     }
 
     private InscriptionRequete requete(String email) {
-        return new InscriptionRequete(email, "motdepasse123", "Vitullo", "Yassine");
+        return new InscriptionRequete(email, "motdepasse123", "Vitullo", "Yassine",
+                "12 rue des Tests", "1000", "Bruxelles");
     }
 
     // Renvoie l'utilisateur que le service a tenté d'enregistrer
@@ -76,6 +77,22 @@ class UtilisateurServiceTest {
         assertThat(enregistre.getNom()).isEqualTo("Vitullo");
         assertThat(enregistre.getPrenom()).isEqualTo("Yassine");
         assertThat(enregistre.getDateInscription()).isNotNull();
+    }
+
+    // US5 : adresse, code postal et ville sont enregistrés, sans les
+    // espaces tapés par erreur autour.
+    @Test
+    void enregistreLAdresseSansEspacesAutour() {
+        when(utilisateurRepository.findByEmail("yassine@mail.be")).thenReturn(Optional.empty());
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        utilisateurService.inscrire(new InscriptionRequete("yassine@mail.be", "motdepasse123",
+                "Vitullo", "Yassine", "  12 rue des Tests ", " 1000 ", " Bruxelles  "));
+
+        Utilisateur enregistre = capturerUtilisateurEnregistre();
+        assertThat(enregistre.getAdresse()).isEqualTo("12 rue des Tests");
+        assertThat(enregistre.getCodePostal()).isEqualTo("1000");
+        assertThat(enregistre.getVille()).isEqualTo("Bruxelles");
     }
 
     @Test
@@ -140,7 +157,7 @@ class UtilisateurServiceTest {
     // par BCrypt, comme le ferait inscrire().
     private Utilisateur compteAvecMotDePasse(String motDePasse) {
         return new Utilisateur("yassine@mail.be", passwordEncoder.encode(motDePasse),
-                "Vitullo", "Yassine");
+                "Vitullo", "Yassine", "12 rue des Tests", "1000", "Bruxelles");
     }
 
     @Test
