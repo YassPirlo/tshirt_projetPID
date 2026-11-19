@@ -1,22 +1,24 @@
-// US4 — Création de compte.
+// Création de compte : US5 du backlog (« US4 » dans le plan de l'équipe).
 //
-// SQUELETTE À COMPLÉTER. Le socle est en place, il reste à écrire le
-// formulaire et l'appel à l'API.
+// Un formulaire contrôlé : chaque champ est relié à un état React, ce qui
+// permet de lire les valeurs à l'envoi et de vider l'erreur dès qu'on
+// corrige.
 //
-// Marche à suivre :
-//  1. un formulaire contrôlé avec email, mot de passe, nom, prénom ;
-//  2. à la soumission, appeler
-//       envoyerJson<Utilisateur>('/api/inscription', { email, motDePasse, nom, prenom })
-//  3. en cas de succès, prévenir le contexte :
-//       definirUtilisateur(compte)
-//     puis rediriger avec onInscrit() ;
-//  4. en cas d'ErreurHttp de statut 409, afficher « Un compte existe déjà
-//     avec cet email » à côté du champ email. Les autres statuts donnent
-//     un message générique.
+// À l'envoi :
+//  1. POST /api/inscription avec envoyerJson() ;
+//  2. si ça marche, on prévient le contexte (definirUtilisateur) : l'en-tête
+//     affiche alors « Bienvenue, <prénom> » sans recharger la page ;
+//  3. puis on redirige avec onInscrit().
 //
-// Pensez au role="alert" sur le message d'erreur : le reste du site le
-// fait déjà (voir FicheProduit), et c'est vérifié par les tests
-// d'accessibilité.
+// Erreurs :
+//  - 409 : l'email est déjà pris -> message à côté du champ email ;
+//  - 400 : un champ est refusé par le back -> on affiche son message ;
+//  - autre : message générique (serveur arrêté, réseau…).
+// Les messages ont role="alert" pour être lus par les lecteurs d'écran.
+
+import { useState, type FormEvent } from 'react'
+import { envoyerJson, ErreurHttp, type Utilisateur } from '../api'
+import { useAuth } from '../ContexteAuth'
 
 type Props = {
   onAccueil: () => void
@@ -26,12 +28,129 @@ type Props = {
   onConnexion: () => void
 }
 
+const MESSAGE_EMAIL_PRIS = 'Un compte existe déjà avec cet email'
+
 function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
+  const { definirUtilisateur } = useAuth()
+
+  const [email, setEmail] = useState('')
+  const [motDePasse, setMotDePasse] = useState('')
+  const [nom, setNom] = useState('')
+  const [prenom, setPrenom] = useState('')
+
+  // Deux erreurs séparées : celle de l'email s'affiche sous le champ email,
+  // l'autre en haut du formulaire.
+  const [erreurEmail, setErreurEmail] = useState<string | null>(null)
+  const [erreur, setErreur] = useState<string | null>(null)
+  const [envoi, setEnvoi] = useState(false)
+
+  const envoyer = async (evenement: FormEvent<HTMLFormElement>) => {
+    // Sans ça, le navigateur rechargerait toute la page
+    evenement.preventDefault()
+    setErreur(null)
+    setErreurEmail(null)
+    setEnvoi(true)
+
+    try {
+      const compte = await envoyerJson<Utilisateur>('/api/inscription', {
+        email,
+        motDePasse,
+        nom,
+        prenom,
+      })
+      if (compte) definirUtilisateur(compte)
+      onInscrit()
+    } catch (e) {
+      if (e instanceof ErreurHttp && e.statut === 409) {
+        setErreurEmail(MESSAGE_EMAIL_PRIS)
+      } else if (e instanceof ErreurHttp && e.statut === 400) {
+        setErreur(e.message)
+      } else {
+        setErreur('Impossible de créer le compte. Réessayez plus tard.')
+      }
+    } finally {
+      setEnvoi(false)
+    }
+  }
+
   return (
     <section className="formulaire" aria-labelledby="titre-inscription">
       <h1 id="titre-inscription">Créer un compte</h1>
+      <p>Tous les champs sont obligatoires.</p>
 
-      <p>Formulaire à écrire (US4).</p>
+      {erreur && (
+        <p className="message message--erreur" role="alert">
+          {erreur}
+        </p>
+      )}
+
+      <form onSubmit={envoyer}>
+        <label>
+          Prénom
+          <input
+            type="text"
+            name="prenom"
+            autoComplete="given-name"
+            required
+            maxLength={100}
+            value={prenom}
+            onChange={(e) => setPrenom(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Nom
+          <input
+            type="text"
+            name="nom"
+            autoComplete="family-name"
+            required
+            maxLength={100}
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Email
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setErreurEmail(null)
+            }}
+            aria-invalid={erreurEmail ? true : undefined}
+            aria-describedby={erreurEmail ? 'erreur-email' : undefined}
+          />
+        </label>
+        {erreurEmail && (
+          <p id="erreur-email" className="message message--erreur" role="alert">
+            {erreurEmail}
+          </p>
+        )}
+
+        <label>
+          Mot de passe (8 caractères minimum)
+          <input
+            type="password"
+            name="motDePasse"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            maxLength={72}
+            value={motDePasse}
+            onChange={(e) => setMotDePasse(e.target.value)}
+          />
+        </label>
+
+        <button type="submit" className="bouton" disabled={envoi}>
+          {envoi ? 'Création…' : 'Créer mon compte'}
+        </button>
+      </form>
 
       <button type="button" className="bouton" onClick={onConnexion}>
         J’ai déjà un compte
@@ -39,9 +158,6 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
       <button type="button" className="bouton" onClick={onAccueil}>
         Retour à l’accueil
       </button>
-
-      {/* onInscrit sera appelé après l'appel à l'API */}
-      <span hidden>{String(!!onInscrit)}</span>
     </section>
   )
 }
