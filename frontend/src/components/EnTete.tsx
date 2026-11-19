@@ -1,4 +1,4 @@
-import type { Categorie } from '../api'
+import type { Categorie, Utilisateur } from '../api'
 import {
   IconeCompte,
   IconeFavoris,
@@ -14,7 +14,8 @@ type Props = {
   onAccueil: () => void
   // US4 à US7 : ouvre le profil si connecté, la connexion sinon
   onCompte: () => void
-  connecte: boolean
+  // Le compte connecté, ou null pour un visiteur
+  utilisateur: Utilisateur | null
 }
 
 // Actions encore sans US : favoris et panier (US8, US9).
@@ -35,8 +36,10 @@ function EnTete({
   onChoisir,
   onAccueil,
   onCompte,
-  connecte,
+  utilisateur,
 }: Props) {
+  const connecte = utilisateur !== null
+
   return (
     <header className="entete">
       <button
@@ -72,42 +75,55 @@ function EnTete({
         )}
       </nav>
 
-      <ul className="entete-actions">
-        <li>
-          <button
-            type="button"
-            aria-label="Rechercher"
-            aria-disabled="true"
-            title="Rechercher (bientôt disponible)"
-          >
-            <IconeRecherche />
-          </button>
-        </li>
-        <li>
-          {/* Le libellé change selon l'état : un lecteur d'écran annonce
-              « Mon profil » ou « Se connecter », pas une icône muette. */}
-          <button
-            type="button"
-            aria-label={connecte ? 'Mon profil' : 'Se connecter'}
-            title={connecte ? 'Mon profil' : 'Se connecter'}
-            onClick={onCompte}
-          >
-            <IconeCompte />
-          </button>
-        </li>
-        {actionsInactives.map(({ nom, Icone }) => (
-          <li key={nom}>
+      <div className="entete-droite">
+        {/* US4 et US5 : « Une fois connecté, l'application affiche sur
+            toutes les pages le message "Bienvenue, <prénom>" ». L'en-tête
+            est présent sur toutes les pages, d'où sa place ici.
+            Le prénom vient de la saisie de l'utilisateur : React l'échappe,
+            il ne peut donc pas y glisser de HTML. */}
+        {utilisateur && (
+          <p className="entete-bienvenue">
+            Bienvenue, {utilisateur.prenom}
+          </p>
+        )}
+
+        <ul className="entete-actions">
+          <li>
             <button
               type="button"
-              aria-label={nom}
+              aria-label="Rechercher"
               aria-disabled="true"
-              title={nom + ' (bientôt disponible)'}
+              title="Rechercher (bientôt disponible)"
             >
-              <Icone />
+              <IconeRecherche />
             </button>
           </li>
-        ))}
-      </ul>
+          <li>
+            {/* Le libellé change selon l'état : un lecteur d'écran annonce
+                « Mon profil » ou « Se connecter », pas une icône muette. */}
+            <button
+              type="button"
+              aria-label={connecte ? 'Mon profil' : 'Se connecter'}
+              title={connecte ? 'Mon profil' : 'Se connecter'}
+              onClick={onCompte}
+            >
+              <IconeCompte />
+            </button>
+          </li>
+          {actionsInactives.map(({ nom, Icone }) => (
+            <li key={nom}>
+              <button
+                type="button"
+                aria-label={nom}
+                aria-disabled="true"
+                title={nom + ' (bientôt disponible)'}
+              >
+                <Icone />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </header>
   )
 }

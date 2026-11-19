@@ -129,8 +129,32 @@ main:focus {
   color: var(--gris);
 }
 
-.entete-actions {
+/* Colonne de droite : « Bienvenue, <prénom> » au-dessus des icônes.
+   Pas côte à côte : le menu des catégories occupe le centre et ne laisse
+   pas la place au message à côté des icônes. Sur ordinateur, l'en-tête
+   garde sa hauteur ; sur mobile, il prend une petite ligne de plus. */
+.entete-droite {
   justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* US4 et US5 : message affiché sur toutes les pages une fois connecté.
+   Un prénom très long est coupé avec « … » plutôt que de déborder sur
+   le menu. */
+.entete-bienvenue {
+  max-width: min(32ch, 100%);
+  overflow: hidden;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entete-actions {
   display: flex;
   gap: 4px;
 }
@@ -1020,6 +1044,10 @@ main {
 
   .entete-actions {
     gap: 0;
+  }
+
+  .entete-bienvenue {
+    font-size: 0.8rem;
   }
 
   .entete-actions button {

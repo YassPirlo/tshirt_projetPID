@@ -271,7 +271,7 @@ function App() {
         onAccueil={revenirAccueil}
         // US4 à US7 : l'icône « Mon compte » devient active
         onCompte={ouvrirCompte}
-        connecte={utilisateur !== null}
+        utilisateur={utilisateur}
       />
 
       <main id="contenu" ref={contenu} tabIndex={-1}>
