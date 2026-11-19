@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
 import com.example.demo.model.Utilisateur;
 import com.example.demo.repository.UtilisateurRepository;
@@ -54,6 +55,22 @@ public class UtilisateurService {
     // compte. Optional vide si l'email est inconnu.
     public Optional<Utilisateur> trouverParEmail(String email) {
         return utilisateurRepository.findByEmail(normaliserEmail(email));
+    }
+
+    // US5 : vérifier un couple email / mot de passe.
+    //
+    // Renvoie le compte si les identifiants sont bons, Optional vide sinon.
+    // Volontairement, l'appelant ne peut pas savoir POURQUOI c'est vide
+    // (email inconnu ou mot de passe faux) : il ne peut donc pas, même par
+    // erreur, répondre différemment dans les deux cas.
+    //
+    // matches() et jamais encode() + equals() : BCrypt tire un sel aléatoire
+    // à chaque encodage, deux encodages du même mot de passe diffèrent.
+    // matches() relit le sel inscrit dans le hachage stocké.
+    public Optional<Utilisateur> verifier(ConnexionRequete requete) {
+        return trouverParEmail(requete.email())
+                .filter(utilisateur -> passwordEncoder.matches(
+                        requete.motDePasse(), utilisateur.getMotDePasse()));
     }
 
     // US7 : retrouver le compte dont l'id est en session.
