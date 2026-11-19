@@ -138,19 +138,33 @@ main:focus {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  max-width: 100%;
-  min-width: 0;
 }
 
 /* US4 et US5 : message affiché sur toutes les pages une fois connecté.
-   Un prénom très long est coupé avec « … » plutôt que de déborder sur
-   le menu. */
+   width: 0 + min-width: 100% : le message prend la largeur des icônes
+   sans jamais l'élargir. C'est donc la rangée d'icônes qui fixe la place
+   de la colonne, et le menu des catégories ne peut pas passer dessous.
+   Un prénom trop long pour cette largeur est coupé avec « … ». */
 .entete-bienvenue {
-  max-width: min(32ch, 100%);
+  width: 0;
+  min-width: 100%;
   overflow: hidden;
+  text-align: right;
   font-size: 0.85rem;
   font-weight: 600;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* US5 : lien d'inscription pour les visiteurs, à la place du message de
+   bienvenue. Sélecteur à deux classes : .lien, défini plus bas dans ce
+   fichier, remettrait sinon la taille de police à celle du parent.
+   padding : zone cliquable d'au moins 24 px de haut (WCAG 2.5.8), sans
+   rendre l'en-tête plus haut que les icônes et le message réunis. */
+.entete-droite .entete-inscription {
+  padding-block: 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1046,7 +1060,8 @@ main {
     gap: 0;
   }
 
-  .entete-bienvenue {
+  .entete-bienvenue,
+  .entete-droite .entete-inscription {
     font-size: 0.8rem;
   }
 
