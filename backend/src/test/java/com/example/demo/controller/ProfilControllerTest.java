@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 // Test du controller seul : pas de base de données, le service est simulé.
 @WebMvcTest(ProfilController.class)
@@ -81,5 +82,33 @@ class ProfilControllerTest {
 
         mockMvc.perform(get("/api/profil").session(sessionConnectee(7L)))
                 .andExpect(status().isUnauthorized());
+    }
+
+        // La preuve que la session est vraiment détruite côté serveur : on
+    // programme le service pour que le compte existe. Si la session
+    // survivait, GET /api/profil répondrait 200, pas 401.
+    @Test
+    void deconnexionRepond204PuisLeProfilRepond401() throws Exception {
+        when(utilisateurService.trouverParId(7L)).thenReturn(Optional.of(compte()));
+        MockHttpSession session = sessionConnectee(7L);
+
+        mockMvc.perform(post("/api/deconnexion").session(session))
+                .andExpect(status().isNoContent());
+
+        assertThat(session.isInvalid()).isTrue();
+
+        mockMvc.perform(get("/api/profil").session(session))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // Idempotence : se déconnecter sans être connecté n'est pas une erreur,
+    // et ne crée pas de session au passage.
+    @Test
+    void deconnexionSansEtreConnecteRepond204() throws Exception {
+        MvcResult resultat = mockMvc.perform(post("/api/deconnexion"))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+        assertThat(resultat.getRequest().getSession(false)).isNull();
     }
 }
