@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
+import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.model.Utilisateur;
 import com.example.demo.repository.UtilisateurRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -84,6 +85,38 @@ public class UtilisateurService {
     // planter sur un Utilisateur absent.
     public Optional<Utilisateur> trouverParId(Long id) {
         return utilisateurRepository.findById(id);
+    }
+
+    // US6 : modifier les informations personnelles du compte connecté.
+    //
+    // Optional vide si le compte n'existe plus (même cas que trouverParId).
+    // Lève EmailDejaUtiliseException si le nouvel email appartient à un
+    // AUTRE compte. Garder son propre email est bien sûr accepté : on
+    // compare les id, pas seulement la présence de l'email en base.
+    public Optional<Utilisateur> modifier(Long id, ModificationProfilRequete requete) {
+        String email = normaliserEmail(requete.email());
+
+        Optional<Utilisateur> compte = utilisateurRepository.findById(id);
+        if (compte.isEmpty()) {
+            return Optional.empty();
+        }
+
+        utilisateurRepository.findByEmail(email)
+                .filter(autre -> !autre.getId().equals(id))
+                .ifPresent(autre -> {
+                    throw new EmailDejaUtiliseException(email);
+                });
+
+        Utilisateur utilisateur = compte.get();
+        utilisateur.setEmail(email);
+        utilisateur.setNom(requete.nom().trim());
+        utilisateur.setPrenom(requete.prenom().trim());
+        utilisateur.setAdresse(requete.adresse().trim());
+        utilisateur.setCodePostal(requete.codePostal().trim());
+        utilisateur.setVille(requete.ville().trim());
+        // Le mot de passe et la date d'inscription ne sont pas touchés.
+
+        return Optional.of(utilisateurRepository.save(utilisateur));
     }
 
     // Les emails sont comparés en minuscules et sans espaces autour :

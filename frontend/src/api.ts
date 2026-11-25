@@ -72,19 +72,21 @@ async function lireJson<T>(chemin: string, signal?: AbortSignal): Promise<T> {
   return reponse.json()
 }
 
-// Envoie un POST en JSON. Utilisé par l'inscription (US5), la connexion
-// (US4) et la déconnexion (US7).
+// Envoie du JSON au back, en POST ou en PUT. Utilisé par l'inscription
+// (US5), la connexion (US4), la modification du profil (US6) et la
+// déconnexion (US7).
 //
 // Le back peut répondre sans corps (déconnexion) : on renvoie alors null,
 // d'où le type de retour T | null.
-async function envoyerJson<T>(
+async function envoyer<T>(
+  methode: 'POST' | 'PUT',
   chemin: string,
   corps?: unknown,
   signal?: AbortSignal,
 ): Promise<T | null> {
   const reponse = await fetch(API_URL + chemin, {
     ...optionsCommunes,
-    method: 'POST',
+    method: methode,
     headers: { 'Content-Type': 'application/json' },
     body: corps === undefined ? undefined : JSON.stringify(corps),
     signal,
@@ -109,6 +111,11 @@ async function envoyerJson<T>(
   return texte ? (JSON.parse(texte) as T) : null
 }
 
+// POST en JSON : le cas le plus courant, gardé tel quel pour ne pas
+// changer les appels déjà écrits.
+const envoyerJson = <T>(chemin: string, corps?: unknown, signal?: AbortSignal) =>
+  envoyer<T>('POST', chemin, corps, signal)
+
 export { envoyerJson }
 
 // US1
@@ -128,6 +135,24 @@ export const getProduit = (id: number, signal?: AbortSignal) =>
 // ContexteAuth utilise au démarrage pour savoir s'il reste une session.
 export const getProfil = (signal?: AbortSignal) =>
   lireJson<Utilisateur>('/api/profil', signal)
+
+// US6 : les informations modifiables du profil. Ni id ni mot de passe :
+// le back modifie toujours le compte de la session, et le mot de passe
+// ne fait pas partie de l'US6.
+export type ModificationProfil = Omit<Utilisateur, 'id'>
+
+// US6 : enregistre les nouvelles informations et renvoie le compte à jour.
+// Lève une ErreurHttp 409 si l'email est pris par un autre compte, 400 si
+// un champ est refusé, 401 si la session a expiré.
+export const modifierProfil = async (
+  modification: ModificationProfil,
+  signal?: AbortSignal,
+) => {
+  const compte = await envoyer<Utilisateur>('PUT', '/api/profil', modification, signal)
+  // Le back renvoie toujours le compte en cas de succès
+  if (!compte) throw new ErreurHttp(500)
+  return compte
+}
 
 // US7 : ferme la session côté serveur (le back répond 204, sans corps).
 // Lève une ErreurHttp si le serveur refuse, ou une TypeError s'il est

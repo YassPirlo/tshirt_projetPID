@@ -1,12 +1,15 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.model.Utilisateur;
+import com.example.demo.service.EmailDejaUtiliseException;
 import com.example.demo.service.UtilisateurService;
 import com.example.demo.session.SessionUtilisateur;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,11 +20,16 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 // Test du controller seul : pas de base de données, le service est simulé.
 @WebMvcTest(ProfilController.class)
@@ -110,5 +118,78 @@ class ProfilControllerTest {
                 .andReturn();
 
         assertThat(resultat.getRequest().getSession(false)).isNull();
+    }
+
+    // ---------- US6 : PUT /api/profil ----------
+
+    private static final String MODIFICATION = """
+            {"email":"marie@mail.be","nom":"Dupont","prenom":"Marie",
+             "adresse":"5 avenue Louise","codePostal":"1050","ville":"Ixelles"}
+            """;
+
+    private Utilisateur compteModifie() {
+        Utilisateur utilisateur = new Utilisateur("marie@mail.be",
+                "$2a$10$hachageFictifPourLeTestDuProfil", "Dupont", "Marie",
+                "5 avenue Louise", "1050", "Ixelles");
+        ReflectionTestUtils.setField(utilisateur, "id", 7L);
+        return utilisateur;
+    }
+
+    @Test
+    void modifieLeCompteConnecteEtRenvoieLeCompteAJour() throws Exception {
+        when(utilisateurService.modifier(eq(7L), any(ModificationProfilRequete.class)))
+                .thenReturn(Optional.of(compteModifie()));
+
+        mockMvc.perform(put("/api/profil").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON).content(MODIFICATION))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7))
+                .andExpect(jsonPath("$.prenom").value("Marie"))
+                .andExpect(jsonPath("$.email").value("marie@mail.be"))
+                .andExpect(jsonPath("$.motDePasse").doesNotExist());
+    }
+
+    // Sans session, rien n'est modifié : le service n'est même pas appelé.
+    @Test
+    void modificationRepond401SansSession() throws Exception {
+        mockMvc.perform(put("/api/profil")
+                        .contentType(MediaType.APPLICATION_JSON).content(MODIFICATION))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Vous n'êtes pas connecté"));
+
+        verify(utilisateurService, never()).modifier(any(), any());
+    }
+
+    @Test
+    void modificationRepond401SiLeCompteNExistePlus() throws Exception {
+        when(utilisateurService.modifier(eq(7L), any(ModificationProfilRequete.class)))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/profil").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON).content(MODIFICATION))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // US6 : « l'email doit rester unique, sinon un message d'erreur ».
+    @Test
+    void modificationRepond409SiLEmailEstDejaPris() throws Exception {
+        when(utilisateurService.modifier(eq(7L), any(ModificationProfilRequete.class)))
+                .thenThrow(new EmailDejaUtiliseException("marie@mail.be"));
+
+        mockMvc.perform(put("/api/profil").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON).content(MODIFICATION))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Un compte existe déjà avec cet email"));
+    }
+
+    @Test
+    void modificationRepond400SiUnChampEstVide() throws Exception {
+        mockMvc.perform(put("/api/profil").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(MODIFICATION.replace("\"Ixelles\"", "\"  \"")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("La ville est obligatoire"));
+
+        verify(utilisateurService, never()).modifier(any(), any());
     }
 }
