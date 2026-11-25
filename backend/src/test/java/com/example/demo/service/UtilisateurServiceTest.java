@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
+import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.model.Utilisateur;
 import com.example.demo.repository.UtilisateurRepository;
 
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -197,6 +199,106 @@ class UtilisateurServiceTest {
 
         assertThat(utilisateurService.verifier(
                 new ConnexionRequete("yassine@mail.be", existant.getMotDePasse()))).isEmpty();
+    }
+
+    // US6 : un compte existant avec un id, comme s'il sortait de la base.
+    // L'entité n'a pas de setId() (c'est la base qui le génère) :
+    // ReflectionTestUtils le pose directement, pour les tests uniquement.
+    private Utilisateur compteEnBase(Long id, String email) {
+        Utilisateur compte = new Utilisateur(email, passwordEncoder.encode("motdepasse123"),
+                "Vitullo", "Yassine", "12 rue des Tests", "1000", "Bruxelles");
+        ReflectionTestUtils.setField(compte, "id", id);
+        return compte;
+    }
+
+    private ModificationProfilRequete modification(String email) {
+        return new ModificationProfilRequete(email, "Dupont", "Marie",
+                "5 avenue Louise", "1050", "Ixelles");
+    }
+
+    @Test
+    void modifieLesInformationsDuCompte() {
+        Utilisateur compte = compteEnBase(42L, "yassine@mail.be");
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.findByEmail("marie@mail.be")).thenReturn(Optional.empty());
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        Optional<Utilisateur> resultat = utilisateurService.modifier(42L, modification("marie@mail.be"));
+
+        Utilisateur enregistre = capturerUtilisateurEnregistre();
+        assertThat(resultat).contains(enregistre);
+        assertThat(enregistre.getEmail()).isEqualTo("marie@mail.be");
+        assertThat(enregistre.getNom()).isEqualTo("Dupont");
+        assertThat(enregistre.getPrenom()).isEqualTo("Marie");
+        assertThat(enregistre.getAdresse()).isEqualTo("5 avenue Louise");
+        assertThat(enregistre.getCodePostal()).isEqualTo("1050");
+        assertThat(enregistre.getVille()).isEqualTo("Ixelles");
+    }
+
+    // Le mot de passe ne fait pas partie de l'US6 : il doit rester intact.
+    @Test
+    void neTouchePasAuMotDePasse() {
+        Utilisateur compte = compteEnBase(42L, "yassine@mail.be");
+        String hachageAvant = compte.getMotDePasse();
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.findByEmail("marie@mail.be")).thenReturn(Optional.empty());
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        utilisateurService.modifier(42L, modification("marie@mail.be"));
+
+        assertThat(capturerUtilisateurEnregistre().getMotDePasse()).isEqualTo(hachageAvant);
+    }
+
+    @Test
+    void normaliseLEmailEtRetireLesEspacesALaModification() {
+        Utilisateur compte = compteEnBase(42L, "yassine@mail.be");
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.findByEmail("marie@mail.be")).thenReturn(Optional.empty());
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        utilisateurService.modifier(42L, new ModificationProfilRequete("  Marie@Mail.BE ",
+                " Dupont ", " Marie ", " 5 avenue Louise ", " 1050 ", " Ixelles "));
+
+        Utilisateur enregistre = capturerUtilisateurEnregistre();
+        assertThat(enregistre.getEmail()).isEqualTo("marie@mail.be");
+        assertThat(enregistre.getNom()).isEqualTo("Dupont");
+        assertThat(enregistre.getVille()).isEqualTo("Ixelles");
+    }
+
+    // US6 : « l'email doit rester unique ».
+    @Test
+    void refuseUnEmailDejaPrisParUnAutreCompte() {
+        when(utilisateurRepository.findById(42L))
+                .thenReturn(Optional.of(compteEnBase(42L, "yassine@mail.be")));
+        when(utilisateurRepository.findByEmail("loic@mail.be"))
+                .thenReturn(Optional.of(compteEnBase(7L, "loic@mail.be")));
+
+        assertThatThrownBy(() -> utilisateurService.modifier(42L, modification("loic@mail.be")))
+                .isInstanceOf(EmailDejaUtiliseException.class);
+
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
+    }
+
+    // Garder son propre email n'est pas un doublon : sinon on ne pourrait
+    // jamais modifier son adresse sans changer aussi d'email.
+    @Test
+    void accepteDeGarderSonPropreEmail() {
+        Utilisateur compte = compteEnBase(42L, "yassine@mail.be");
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.findByEmail("yassine@mail.be")).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertThat(utilisateurService.modifier(42L, modification("Yassine@mail.be"))).isPresent();
+        assertThat(capturerUtilisateurEnregistre().getVille()).isEqualTo("Ixelles");
+    }
+
+    // Même cas que trouverParId : la session porte l'id d'un compte supprimé.
+    @Test
+    void renvoieUnOptionalVideSiLeCompteAModifierNExistePlus() {
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.empty());
+
+        assertThat(utilisateurService.modifier(42L, modification("marie@mail.be"))).isEmpty();
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
     }
 
     @Test

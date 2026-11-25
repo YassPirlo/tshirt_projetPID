@@ -1,18 +1,22 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ErreurReponse;
+import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.dto.UtilisateurReponse;
 import com.example.demo.service.UtilisateurService;
 import com.example.demo.session.SessionUtilisateur;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-// Le compte connecté (profil, base de l'US6) et la déconnexion (US7).
+// Le compte connecté : le lire et le modifier (US6), se déconnecter (US7).
 //
 // Les deux endpoints sont ensemble parce qu'ils lisent et détruisent la même
 // session, et qu'ils sont portés par la même page du front (Profil.tsx).
@@ -45,9 +49,36 @@ public class ProfilController {
                 // Deux cas donnent 401 : pas de session, ou une session dont
                 // le compte a été supprimé entre-temps. Dans les deux cas,
                 // personne n'est connecté.
-                .orElseGet(() -> ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .body(new ErreurReponse("Vous n'êtes pas connecté")));
+                .orElseGet(ProfilController::nonConnecte);
+    }
+
+    // US6 : PUT /api/profil, modifier ses informations personnelles.
+    //
+    // PUT et non POST : on remplace les informations du compte par celles
+    // du formulaire, et refaire la même requête donne le même résultat.
+    //
+    // Le compte modifié est TOUJOURS celui de la session : la requête ne
+    // contient pas d'id, personne ne peut donc modifier le compte d'un autre.
+    //
+    // Réponses :
+    //  - 200 avec le compte à jour (le front met « Bienvenue » à jour avec) ;
+    //  - 401 sans session, ou si le compte a été supprimé entre-temps ;
+    //  - 409 si l'email appartient à un autre compte, et 400 si un champ
+    //    est invalide : gérés par GestionnaireErreurs, comme l'inscription.
+    @PutMapping("/api/profil")
+    public ResponseEntity<?> modifier(HttpServletRequest requete,
+                                      @Valid @RequestBody ModificationProfilRequete modification) {
+        return SessionUtilisateur.idConnecte(requete)
+                .flatMap(id -> utilisateurService.modifier(id, modification))
+                .<ResponseEntity<?>>map(utilisateur ->
+                        ResponseEntity.ok(UtilisateurReponse.depuis(utilisateur)))
+                .orElseGet(ProfilController::nonConnecte);
+    }
+
+    private static ResponseEntity<?> nonConnecte() {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErreurReponse("Vous n'êtes pas connecté"));
     }
 
     // US7 : déconnexion.

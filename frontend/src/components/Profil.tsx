@@ -1,4 +1,4 @@
-// US6 — Affichage du profil, et US7 — Déconnexion.
+// US6 — Affichage et modification du profil, et US7 — Déconnexion.
 //
 // Les informations viennent du contexte (useAuth) : pas besoin d'appeler
 // l'API, FournisseurAuth les a déjà récupérées au démarrage.
@@ -7,9 +7,13 @@
 // l'accueil) est écrite une seule fois dans App et reçue en prop. Cette
 // page n'ajoute que ce qui lui est propre : le bouton et le message si
 // l'appel échoue.
+//
+// La modification (US6) est un formulaire à part, ModificationProfil,
+// affiché à la place des informations quand on clique sur « Modifier ».
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../ContexteAuth'
+import ModificationProfil from './ModificationProfil'
 
 type Props = {
   onAccueil: () => void
@@ -24,6 +28,19 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
   const { utilisateur, chargement } = useAuth()
   const [enCours, setEnCours] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
+
+  // US6 : formulaire ouvert ou non, et message après un enregistrement
+  const [modification, setModification] = useState(false)
+  const [enregistre, setEnregistre] = useState(false)
+
+  // En refermant le formulaire, le focus revient sur « Modifier mes
+  // informations » au lieu de se perdre en haut de la page.
+  const boutonModifier = useRef<HTMLButtonElement>(null)
+  const formulaireOuvert = useRef(false)
+  useEffect(() => {
+    if (formulaireOuvert.current && !modification) boutonModifier.current?.focus()
+    formulaireOuvert.current = modification
+  }, [modification])
 
   const seDeconnecter = async () => {
     setErreur(null)
@@ -53,8 +70,25 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
     <section className="formulaire" aria-labelledby="titre-profil">
       <h1 id="titre-profil">Mon profil</h1>
 
-      {utilisateur ? (
+      {utilisateur && modification ? (
+        <ModificationProfil
+          utilisateur={utilisateur}
+          onEnregistre={() => {
+            setModification(false)
+            setEnregistre(true)
+          }}
+          onAnnuler={() => setModification(false)}
+        />
+      ) : utilisateur ? (
         <>
+          {/* role="status" : annoncé par les lecteurs d'écran sans
+              interrompre, contrairement à une erreur (role="alert"). */}
+          {enregistre && (
+            <p className="message" role="status">
+              Vos informations ont été enregistrées.
+            </p>
+          )}
+
           {/* React échappe ces valeurs : elles viennent de la saisie des
               utilisateurs et ne peuvent pas y glisser de HTML. */}
           <dl className="profil-infos">
@@ -77,6 +111,18 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
               {erreur}
             </p>
           )}
+
+          <button
+            type="button"
+            className="bouton"
+            ref={boutonModifier}
+            onClick={() => {
+              setEnregistre(false)
+              setModification(true)
+            }}
+          >
+            Modifier mes informations
+          </button>
 
           <button
             type="button"
