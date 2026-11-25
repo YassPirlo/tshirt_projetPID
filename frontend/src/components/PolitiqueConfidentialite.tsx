@@ -42,9 +42,11 @@ function PolitiqueConfidentialite({ onAccueil, onCookies }: Props) {
       </p>
       <p>
         <strong>Si vous créez un compte</strong>, nous enregistrons votre
-        adresse e-mail, votre nom, votre prénom, votre mot de passe et la date
-        de création du compte. Ils servent uniquement à vous identifier quand
-        vous vous connectez et à afficher votre profil (article 6.1.b du RGPD :
+        adresse e-mail, votre nom, votre prénom, votre adresse postale (rue,
+        code postal, ville), votre mot de passe et la date de création du
+        compte. Ils servent uniquement à vous identifier quand vous vous
+        connectez et à afficher votre profil, que vous pouvez modifier à tout
+        moment depuis la page Mon profil (article 6.1.b du RGPD :
         ces données sont nécessaires au service que vous demandez). Ils sont
         conservés tant que votre compte existe ; pour le supprimer, écrivez à
         l'adresse ci-dessus.
@@ -74,8 +76,8 @@ function PolitiqueConfidentialite({ onAccueil, onCookies }: Props) {
       <p>
         Le panier, le paiement et la livraison arriveront dans les prochaines
         versions. Nous demanderons alors uniquement ce qui est nécessaire pour
-        traiter votre commande : adresse de livraison et historique de vos
-        commandes, en plus des données de votre compte. Vos données de paiement
+        traiter votre commande : l'historique de vos commandes et, si elle
+        diffère de celle de votre compte, une adresse de livraison. Vos données de paiement
         seront traitées par le prestataire de paiement, pas par FACE.
       </p>
       <p>

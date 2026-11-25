@@ -8,8 +8,9 @@ describe('PolitiqueConfidentialite', () => {
 
     expect(screen.getByText(/Si vous créez un compte/)).toBeInTheDocument()
     expect(
-      screen.getByText(/adresse e-mail, votre nom, votre prénom, votre mot de passe/),
+      screen.getByText(/adresse e-mail, votre nom, votre prénom, votre adresse postale/),
     ).toBeInTheDocument()
+    expect(screen.getByText(/code postal, ville/)).toBeInTheDocument()
   })
 
   // Le mot de passe est haché, pas chiffré : un chiffrement se déchiffre,

@@ -9,7 +9,7 @@ export const infosLegales = {
   ecole: "[nom de l'école]",
   adresse: "[adresse de l'école]",
   emailContact: 'rgpd@face.example',
-  miseAJour: '19 novembre 2026',
+  miseAJour: '25 novembre 2026',
   autorite: {
     nom: 'Autorité de protection des données (APD)',
     site: 'https://www.autoriteprotectiondonnees.be',
