@@ -9,6 +9,7 @@ import {
   useNavigationType,
 } from 'react-router'
 import {
+  deconnecter, 
   getCategories,
   getProduit,
   getProduitsDeCategorie,
@@ -87,7 +88,11 @@ function App() {
 
   // Qui est connecté : fourni par ContexteAuth, partagé avec l'en-tête
   // et les pages de compte.
-  const { utilisateur, chargement: verificationSession } = useAuth()
+  const {
+  utilisateur,
+  chargement: verificationSession,
+  oublierUtilisateur,
+} = useAuth()
 
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
@@ -112,6 +117,18 @@ function App() {
   // déjà connecté, le formulaire de connexion sinon.
   const ouvrirCompte = () =>
     navigate(utilisateur ? chemins.profil : chemins.connexion)
+
+    // US7 : la déconnexion, écrite UNE seule fois. L'en-tête (présent sur
+  // toutes les pages) et la page Profil l'utilisent toutes les deux.
+  //
+  // Ordre important : on n'oublie l'utilisateur côté front qu'APRÈS la
+  // réponse du serveur. Si l'appel échoue, deconnecter() lève une erreur,
+  // on n'arrive pas aux lignes suivantes, et l'utilisateur reste connecté.
+  const seDeconnecter = async () => {
+    await deconnecter()
+    oublierUtilisateur()
+    revenirAccueil()
+  }
 
   // US1 : au chargement du site, on récupère les catégories
   useEffect(() => {
@@ -274,7 +291,9 @@ function App() {
         utilisateur={utilisateur}
         verificationSession={verificationSession}
         onInscription={() => navigate(chemins.inscription)}
+        onDeconnexion={seDeconnecter}
       />
+      
 
       <main id="contenu" ref={contenu} tabIndex={-1}>
         {/* Une <Route> par page : React Router affiche celle dont le
@@ -364,7 +383,7 @@ function App() {
             element={
               <Profil
                 onAccueil={revenirAccueil}
-                onDeconnecte={revenirAccueil}
+                onDeconnexion={seDeconnecter}
                 onConnexion={() => navigate(chemins.connexion)}
               />
             }

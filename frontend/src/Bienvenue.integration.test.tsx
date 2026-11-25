@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { rendreApp } from './test/rendre'
 import { classiques } from './test/donnees'
+import { chemins } from './chemins'
 
 // US4 et US5 — critère d'acceptation : « Une fois connecté, l'application
 // affiche sur toutes les pages le message "Bienvenue, <prénom>" ».
@@ -18,24 +19,38 @@ const compte = {
 
 // session : true si le cookie de session est encore valide au démarrage
 // (cas d'un F5 alors qu'on était connecté).
-function demarrerFauxBack({ session }: { session: boolean }) {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url: string) => {
-      if (url === '/api/profil') {
-        return session
-          ? new Response(JSON.stringify(compte), { status: 200 })
-          : new Response('{}', { status: 401 })
-      }
-      if (url === '/api/connexion') {
-        return new Response(JSON.stringify(compte), { status: 200 })
-      }
-      if (url === '/api/categories') {
-        return new Response(JSON.stringify([classiques]), { status: 200 })
-      }
-      return new Response('{}', { status: 404 })
-    }),
-  )
+// session : true si le cookie de session est encore valide au démarrage
+// (cas d'un F5 alors qu'on était connecté).
+// deconnexion : le code que renvoie /api/deconnexion (204 = réussi).
+// Une déconnexion réussie ferme la session : /api/profil répond ensuite 401.
+function demarrerFauxBack({
+  session,
+  deconnexion = 204,
+}: {
+  session: boolean
+  deconnexion?: number
+}) {
+  let sessionOuverte = session
+  const faux = vi.fn(async (url: string) => {
+    if (url === '/api/profil') {
+      return sessionOuverte
+        ? new Response(JSON.stringify(compte), { status: 200 })
+        : new Response('{}', { status: 401 })
+    }
+    if (url === '/api/connexion') {
+      return new Response(JSON.stringify(compte), { status: 200 })
+    }
+    if (url === '/api/deconnexion') {
+      if (deconnexion === 204) sessionOuverte = false
+      return new Response(null, { status: deconnexion })
+    }
+    if (url === '/api/categories') {
+      return new Response(JSON.stringify([classiques]), { status: 200 })
+    }
+    return new Response('{}', { status: 404 })
+  })
+  vi.stubGlobal('fetch', faux)
+  return faux
 }
 
 // Le message est cherché dans l'en-tête (role banner), présent sur
@@ -110,5 +125,75 @@ describe('« Bienvenue, <prénom> » et « Créer un compte » dans l’en-tête
 
     expect(await entete().findByText('Bienvenue, Yassine')).toBeInTheDocument()
     expect(entete().getByRole('button', { name: 'Mon profil' })).toBeInTheDocument()
+  })
+})
+
+describe('Bouton « Se déconnecter » (US7)', () => {
+  beforeEach(() => {
+    window.scrollTo = vi.fn()
+  })
+
+  it('n’existe pas pour un visiteur', async () => {
+    demarrerFauxBack({ session: false })
+    rendreApp('/')
+
+    await entete().findByRole('button', { name: 'Se connecter' })
+    expect(
+      entete().queryByRole('button', { name: 'Se déconnecter' }),
+    ).not.toBeInTheDocument()
+  })
+
+  // Le piège du backlog : « déconnexion possible depuis n'importe quelle
+  // page », donc depuis l'en-tête, pas seulement depuis le profil.
+  it('déconnecte depuis l’en-tête, sur n’importe quelle page', async () => {
+    const faux = demarrerFauxBack({ session: true })
+    rendreApp('/mentions-legales')
+    const utilisateur = userEvent.setup()
+
+    await utilisateur.click(
+      await entete().findByRole('button', { name: 'Se déconnecter' }),
+    )
+
+    // L'en-tête repasse en mode visiteur et on revient à l'accueil
+    expect(
+      await entete().findByRole('button', { name: 'Se connecter' }),
+    ).toBeInTheDocument()
+    expect(entete().queryByText(/Bienvenue/)).not.toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+    expect(faux).toHaveBeenCalledWith(
+      '/api/deconnexion',
+      expect.objectContaining({ method: 'POST', credentials: 'include' }),
+    )
+  })
+
+  it('déconnecte aussi depuis la page profil', async () => {
+    demarrerFauxBack({ session: true })
+    rendreApp(chemins.profil)
+    const utilisateur = userEvent.setup()
+
+    await utilisateur.click(
+      await within(screen.getByRole('main')).findByRole('button', {
+        name: 'Se déconnecter',
+      }),
+    )
+
+    expect(
+      await entete().findByRole('button', { name: 'Se connecter' }),
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('reste connecté et prévient si le serveur refuse', async () => {
+    demarrerFauxBack({ session: true, deconnexion: 500 })
+    rendreApp('/mentions-legales')
+    const utilisateur = userEvent.setup()
+
+    await utilisateur.click(
+      await entete().findByRole('button', { name: 'Se déconnecter' }),
+    )
+
+    expect(await entete().findByRole('alert')).toBeInTheDocument()
+    expect(entete().getByText('Bienvenue, Yassine')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/mentions-legales')
   })
 })

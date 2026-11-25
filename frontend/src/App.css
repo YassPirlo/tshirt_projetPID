@@ -1122,4 +1122,15 @@ main {
     animation: none !important;
     transition: none !important;
   }
+
+
+.entete-compte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+.entete-compte p {
+  margin: 0;
+}
 }

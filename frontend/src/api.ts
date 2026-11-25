@@ -129,6 +129,12 @@ export const getProduit = (id: number, signal?: AbortSignal) =>
 export const getProfil = (signal?: AbortSignal) =>
   lireJson<Utilisateur>('/api/profil', signal)
 
+// US7 : ferme la session côté serveur (le back répond 204, sans corps).
+// Lève une ErreurHttp si le serveur refuse, ou une TypeError s'il est
+// injoignable : l'appelant doit alors rester connecté.
+export const deconnecter = (signal?: AbortSignal) =>
+  envoyerJson<void>('/api/deconnexion', undefined, signal)
+
 // Prix à la française : « 19,99 € » et non « 19.99 € »
 const formatEuro = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
