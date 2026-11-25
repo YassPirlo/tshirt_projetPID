@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
 
 // Le compte connecté (profil, base de l'US6) et la déconnexion (US7).
 //
@@ -49,21 +50,21 @@ public class ProfilController {
                         .body(new ErreurReponse("Vous n'êtes pas connecté")));
     }
 
-    // US7 — Déconnexion. SQUELETTE À COMPLÉTER (Laurine).
-    //
-    // @PostMapping("/api/deconnexion"), avec HttpServletRequest en paramètre :
-    //  1. SessionUtilisateur.fermer(requete) ;
-    //  2. 204 No Content (rien à renvoyer ; le front gère déjà un corps vide).
+    // US7 : déconnexion.
     //
     // POST et non GET : une déconnexion modifie l'état du serveur. En GET, une
     // simple balise <img src="/api/deconnexion"> sur n'importe quel site
     // déconnecterait nos visiteurs.
     //
-    // POINT NOTÉ : c'est bien le SERVEUR qui invalide la session. Se contenter
-    // d'oublier l'utilisateur côté front laisserait la session active ici, donc
-    // le compte resterait accessible après un F5.
+    // C'est bien le SERVEUR qui invalide la session. Se contenter d'oublier
+    // l'utilisateur côté front laisserait la session active ici, donc le
+    // compte resterait accessible après un F5.
     //
-    // À tester :
-    //  - déconnexion : 204, puis GET /api/profil répond 401 juste après
-    //  - déconnexion sans être connecté : 204 aussi, pas d'erreur
+    // 204 même si personne n'est connecté : la déconnexion est idempotente,
+    // ce n'est pas une erreur.
+    @PostMapping("/api/deconnexion")
+    public ResponseEntity<Void> deconnexion(HttpServletRequest requete) {
+        SessionUtilisateur.fermer(requete);
+        return ResponseEntity.noContent().build();
+    }
 }
