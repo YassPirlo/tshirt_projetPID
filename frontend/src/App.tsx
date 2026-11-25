@@ -9,7 +9,7 @@ import {
   useNavigationType,
 } from 'react-router'
 import {
-  deconnecter, 
+  deconnecter,
   getCategories,
   getProduit,
   getProduitsDeCategorie,
@@ -89,10 +89,10 @@ function App() {
   // Qui est connecté : fourni par ContexteAuth, partagé avec l'en-tête
   // et les pages de compte.
   const {
-  utilisateur,
-  chargement: verificationSession,
-  oublierUtilisateur,
-} = useAuth()
+    utilisateur,
+    chargement: verificationSession,
+    oublierUtilisateur,
+  } = useAuth()
 
   // Cookies : choix du visiteur, lu une seule fois au démarrage.
   // Le bandeau s'affiche tant qu'aucun choix valide n'est enregistré.
@@ -118,7 +118,7 @@ function App() {
   const ouvrirCompte = () =>
     navigate(utilisateur ? chemins.profil : chemins.connexion)
 
-    // US7 : la déconnexion, écrite UNE seule fois. L'en-tête (présent sur
+  // US7 : la déconnexion, écrite UNE seule fois. L'en-tête (présent sur
   // toutes les pages) et la page Profil l'utilisent toutes les deux.
   //
   // Ordre important : on n'oublie l'utilisateur côté front qu'APRÈS la
@@ -293,7 +293,6 @@ function App() {
         onInscription={() => navigate(chemins.inscription)}
         onDeconnexion={seDeconnecter}
       />
-      
 
       <main id="contenu" ref={contenu} tabIndex={-1}>
         {/* Une <Route> par page : React Router affiche celle dont le

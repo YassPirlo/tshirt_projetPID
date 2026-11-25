@@ -50,7 +50,7 @@ public class ProfilController {
                         .body(new ErreurReponse("Vous n'êtes pas connecté")));
     }
 
-        // US7 : déconnexion.
+    // US7 : déconnexion.
     //
     // POST et non GET : une déconnexion modifie l'état du serveur. En GET, une
     // simple balise <img src="/api/deconnexion"> sur n'importe quel site

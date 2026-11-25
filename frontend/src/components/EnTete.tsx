@@ -21,7 +21,7 @@ type Props = {
   verificationSession: boolean
   // US5 : mène au formulaire d'inscription
   onInscription: () => void
-    // US7 : déconnexion complète (serveur, contexte, redirection), fournie
+  // US7 : déconnexion complète (serveur, contexte, redirection), fournie
   // par App. Lève une erreur si le serveur refuse.
   onDeconnexion: () => Promise<void>
 }
@@ -47,10 +47,10 @@ function EnTete({
   utilisateur,
   verificationSession,
   onInscription,
-  onDeconnexion, 
+  onDeconnexion,
 }: Props) {
   const connecte = utilisateur !== null
-    // Le bouton se bloque pendant l'appel (pas de double clic) et un message
+  // Le bouton se bloque pendant l'appel (pas de double clic) et un message
   // s'affiche si le serveur refuse : on reste alors connecté.
   const [deconnexionEnCours, setDeconnexionEnCours] = useState(false)
   const [deconnexionEchouee, setDeconnexionEchouee] = useState(false)
@@ -109,7 +109,11 @@ function EnTete({
             Le prénom vient de la saisie de l'utilisateur : React l'échappe,
             il ne peut donc pas y glisser de HTML. */}
         {utilisateur ? (
-          <div className="entete-compte">
+          // US7 : « déconnexion possible depuis n'importe quelle page ».
+          // Fragment et non <div> : le message, le bouton et l'alerte
+          // restent des enfants directs de .entete-droite, comme le lien
+          // « Créer un compte », pour garder la même mise en page.
+          <>
             <p className="entete-bienvenue">
               Bienvenue, {utilisateur.prenom}
             </p>
@@ -122,11 +126,11 @@ function EnTete({
               Se déconnecter
             </button>
             {deconnexionEchouee && (
-              <p className="message message--erreur" role="alert">
+              <p className="message message--erreur entete-alerte" role="alert">
                 Déconnexion impossible, réessayez.
               </p>
             )}
-          </div>
+          </>
         ) : (
           // US5 : « l'inscription est possible depuis n'importe quelle
           // page ». Masqué pendant la vérification de la session, sinon

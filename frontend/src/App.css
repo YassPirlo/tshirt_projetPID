@@ -134,6 +134,7 @@ main:focus {
    pas la place au message à côté des icônes. Sur ordinateur, l'en-tête
    garde sa hauteur ; sur mobile, il prend une petite ligne de plus. */
 .entete-droite {
+  position: relative;
   justify-self: end;
   display: flex;
   flex-direction: column;
@@ -161,7 +162,8 @@ main:focus {
    fichier, remettrait sinon la taille de police à celle du parent.
    padding : zone cliquable d'au moins 24 px de haut (WCAG 2.5.8), sans
    rendre l'en-tête plus haut que les icônes et le message réunis. */
-.entete-droite .entete-inscription {
+.entete-droite .entete-inscription,
+.entete-droite .entete-deconnexion {
   padding-block: 2px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -171,6 +173,18 @@ main:focus {
 .entete-actions {
   display: flex;
   gap: 4px;
+}
+
+/* US7 : si le serveur refuse la déconnexion. Posé sous l'en-tête, en
+   dehors du flux : un message dans la colonne l'élargirait et ferait
+   déborder le menu des catégories. */
+.entete-alerte {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
+  font-size: 0.85rem;
 }
 
 /* 44 px : taille minimale confortable pour un doigt */
@@ -994,6 +1008,34 @@ main {
   gap: 16px;
 }
 
+/* US6 : informations du compte, libellé à gauche et valeur à droite.
+   Une ligne fine entre chaque information, comme un récapitulatif. */
+.profil-infos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  margin: 0 0 12px;
+  border-top: 1px solid var(--trait);
+}
+
+.profil-infos dt,
+.profil-infos dd {
+  margin: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--trait);
+}
+
+.profil-infos dt {
+  padding-right: 24px;
+  color: var(--gris);
+}
+
+/* Un email ou une adresse très longs passent à la ligne au lieu de
+   déborder sur mobile. */
+.profil-infos dd {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .formulaire label {
   display: grid;
   gap: 6px;
@@ -1061,7 +1103,8 @@ main {
   }
 
   .entete-bienvenue,
-  .entete-droite .entete-inscription {
+  .entete-droite .entete-inscription,
+.entete-droite .entete-deconnexion {
     font-size: 0.8rem;
   }
 
@@ -1122,15 +1165,4 @@ main {
     animation: none !important;
     transition: none !important;
   }
-
-
-.entete-compte {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
-}
-.entete-compte p {
-  margin: 0;
-}
 }

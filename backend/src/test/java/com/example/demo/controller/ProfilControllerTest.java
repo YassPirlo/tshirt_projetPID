@@ -84,7 +84,7 @@ class ProfilControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-        // La preuve que la session est vraiment détruite côté serveur : on
+    // La preuve que la session est vraiment détruite côté serveur : on
     // programme le service pour que le compte existe. Si la session
     // survivait, GET /api/profil répondrait 200, pas 401.
     @Test

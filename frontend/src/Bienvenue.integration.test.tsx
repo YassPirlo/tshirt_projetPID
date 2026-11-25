@@ -19,8 +19,6 @@ const compte = {
 
 // session : true si le cookie de session est encore valide au démarrage
 // (cas d'un F5 alors qu'on était connecté).
-// session : true si le cookie de session est encore valide au démarrage
-// (cas d'un F5 alors qu'on était connecté).
 // deconnexion : le code que renvoie /api/deconnexion (204 = réussi).
 // Une déconnexion réussie ferme la session : /api/profil répond ensuite 401.
 function demarrerFauxBack({
