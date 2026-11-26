@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ChangementMotDePasseRequete;
 import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.model.Utilisateur;
 import com.example.demo.service.EmailDejaUtiliseException;
+import com.example.demo.service.MotDePasseIncorrectException;
 import com.example.demo.service.UtilisateurService;
 import com.example.demo.session.SessionUtilisateur;
 
@@ -191,5 +193,52 @@ class ProfilControllerTest {
                 .andExpect(jsonPath("$.message").value("La ville est obligatoire"));
 
         verify(utilisateurService, never()).modifier(any(), any());
+    }
+
+    // Changement de mot de passe
+
+    private static final String CHANGEMENT =
+            "{\"ancienMotDePasse\":\"motdepasse123\",\"nouveauMotDePasse\":\"nouveauSecret9\"}";
+
+    @Test
+    void changementDeMotDePasseRepond204() throws Exception {
+        when(utilisateurService.changerMotDePasse(eq(7L), any(ChangementMotDePasseRequete.class)))
+                .thenReturn(Optional.of(compte()));
+
+        mockMvc.perform(put("/api/profil/mot-de-passe").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON).content(CHANGEMENT))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void changementDeMotDePasseRepond401SansSession() throws Exception {
+        mockMvc.perform(put("/api/profil/mot-de-passe")
+                        .contentType(MediaType.APPLICATION_JSON).content(CHANGEMENT))
+                .andExpect(status().isUnauthorized());
+
+        verify(utilisateurService, never()).changerMotDePasse(any(), any());
+    }
+
+    @Test
+    void changementDeMotDePasseRepond400SiLAncienEstFaux() throws Exception {
+        when(utilisateurService.changerMotDePasse(eq(7L), any(ChangementMotDePasseRequete.class)))
+                .thenThrow(new MotDePasseIncorrectException());
+
+        mockMvc.perform(put("/api/profil/mot-de-passe").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON).content(CHANGEMENT))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Mot de passe actuel incorrect"));
+    }
+
+    @Test
+    void changementDeMotDePasseRepond400SiLeNouveauEstTropCourt() throws Exception {
+        mockMvc.perform(put("/api/profil/mot-de-passe").session(sessionConnectee(7L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CHANGEMENT.replace("nouveauSecret9", "court")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("Le nouveau mot de passe doit faire au moins 8 caractères"));
+
+        verify(utilisateurService, never()).changerMotDePasse(any(), any());
     }
 }

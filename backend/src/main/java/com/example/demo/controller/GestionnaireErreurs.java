@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ErreurReponse;
 import com.example.demo.service.EmailDejaUtiliseException;
+import com.example.demo.service.MotDePasseIncorrectException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,17 @@ public class GestionnaireErreurs {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErreurReponse("Un compte existe déjà avec cet email"));
+    }
+
+    // Changement de mot de passe avec un mot de passe actuel faux.
+    // 400 et non 401 : la personne EST connectée, c'est la donnée saisie
+    // qui est refusée. Le front réserve 401 à « session expirée ».
+    @ExceptionHandler(MotDePasseIncorrectException.class)
+    public ResponseEntity<ErreurReponse> motDePasseIncorrect(
+            MotDePasseIncorrectException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErreurReponse("Mot de passe actuel incorrect"));
     }
 
     // Déclenché quand un @Valid échoue : champ vide, email mal formé, mot de

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ChangementMotDePasseRequete;
 import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
 import com.example.demo.dto.ModificationProfilRequete;
@@ -309,5 +310,45 @@ class UtilisateurServiceTest {
 
         assertThat(utilisateurService.verifier(
                 new ConnexionRequete("  Yassine@Mail.BE ", "motdepasse123"))).contains(existant);
+    }
+
+    // Changement de mot de passe
+
+    @Test
+    void changeLeMotDePasseEtLeStockeHache() {
+        Utilisateur compte = compteEnBase(42L, "yassine@mail.be");
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.of(compte));
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertThat(utilisateurService.changerMotDePasse(42L,
+                new ChangementMotDePasseRequete("motdepasse123", "nouveauSecret9"))).isPresent();
+
+        String hachage = capturerUtilisateurEnregistre().getMotDePasse();
+        assertThat(hachage).isNotEqualTo("nouveauSecret9");
+        assertThat(passwordEncoder.matches("nouveauSecret9", hachage)).isTrue();
+        assertThat(passwordEncoder.matches("motdepasse123", hachage)).isFalse();
+    }
+
+    // Sans l'ancien mot de passe, quelqu'un qui trouve un ordinateur resté
+    // connecté pourrait s'approprier le compte.
+    @Test
+    void refuseDeChangerLeMotDePasseSiLAncienEstFaux() {
+        when(utilisateurRepository.findById(42L))
+                .thenReturn(Optional.of(compteEnBase(42L, "yassine@mail.be")));
+
+        assertThatThrownBy(() -> utilisateurService.changerMotDePasse(42L,
+                new ChangementMotDePasseRequete("mauvais123", "nouveauSecret9")))
+                .isInstanceOf(MotDePasseIncorrectException.class);
+
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
+    }
+
+    @Test
+    void renvoieUnOptionalVideSiLeCompteNExistePlusAuChangementDeMotDePasse() {
+        when(utilisateurRepository.findById(42L)).thenReturn(Optional.empty());
+
+        assertThat(utilisateurService.changerMotDePasse(42L,
+                new ChangementMotDePasseRequete("motdepasse123", "nouveauSecret9"))).isEmpty();
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
     }
 }
