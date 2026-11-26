@@ -8,11 +8,13 @@
 // page n'ajoute que ce qui lui est propre : le bouton et le message si
 // l'appel échoue.
 //
-// La modification (US6) est un formulaire à part, ModificationProfil,
-// affiché à la place des informations quand on clique sur « Modifier ».
+// La modification (US6) et le changement de mot de passe sont deux
+// formulaires à part (ModificationProfil, ChangementMotDePasse), affichés
+// à la place des informations quand on clique sur le bouton correspondant.
 
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../ContexteAuth'
+import ChangementMotDePasse from './ChangementMotDePasse'
 import ModificationProfil from './ModificationProfil'
 
 type Props = {
@@ -29,18 +31,33 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
   const [enCours, setEnCours] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
 
-  // US6 : formulaire ouvert ou non, et message après un enregistrement
-  const [modification, setModification] = useState(false)
-  const [enregistre, setEnregistre] = useState(false)
+  // Formulaire ouvert (aucun, informations ou mot de passe) et message de
+  // confirmation après un enregistrement
+  const [formulaire, setFormulaire] = useState<'infos' | 'motDePasse' | null>(null)
+  const [confirmation, setConfirmation] = useState<string | null>(null)
 
-  // En refermant le formulaire, le focus revient sur « Modifier mes
-  // informations » au lieu de se perdre en haut de la page.
+  // En refermant un formulaire, le focus revient sur le bouton qui l'a
+  // ouvert au lieu de se perdre en haut de la page.
   const boutonModifier = useRef<HTMLButtonElement>(null)
-  const formulaireOuvert = useRef(false)
+  const boutonMotDePasse = useRef<HTMLButtonElement>(null)
+  const dernierFormulaire = useRef<'infos' | 'motDePasse' | null>(null)
   useEffect(() => {
-    if (formulaireOuvert.current && !modification) boutonModifier.current?.focus()
-    formulaireOuvert.current = modification
-  }, [modification])
+    if (formulaire === null) {
+      if (dernierFormulaire.current === 'infos') boutonModifier.current?.focus()
+      if (dernierFormulaire.current === 'motDePasse') boutonMotDePasse.current?.focus()
+    }
+    dernierFormulaire.current = formulaire
+  }, [formulaire])
+
+  const ouvrir = (choix: 'infos' | 'motDePasse') => {
+    setConfirmation(null)
+    setFormulaire(choix)
+  }
+
+  const fermer = (message: string | null) => {
+    setFormulaire(null)
+    setConfirmation(message)
+  }
 
   const seDeconnecter = async () => {
     setErreur(null)
@@ -70,22 +87,24 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
     <section className="formulaire" aria-labelledby="titre-profil">
       <h1 id="titre-profil">Mon profil</h1>
 
-      {utilisateur && modification ? (
+      {utilisateur && formulaire === 'infos' ? (
         <ModificationProfil
           utilisateur={utilisateur}
-          onEnregistre={() => {
-            setModification(false)
-            setEnregistre(true)
-          }}
-          onAnnuler={() => setModification(false)}
+          onEnregistre={() => fermer('Vos informations ont été enregistrées.')}
+          onAnnuler={() => fermer(null)}
+        />
+      ) : utilisateur && formulaire === 'motDePasse' ? (
+        <ChangementMotDePasse
+          onEnregistre={() => fermer('Votre mot de passe a été changé.')}
+          onAnnuler={() => fermer(null)}
         />
       ) : utilisateur ? (
         <>
           {/* role="status" : annoncé par les lecteurs d'écran sans
               interrompre, contrairement à une erreur (role="alert"). */}
-          {enregistre && (
+          {confirmation && (
             <p className="message" role="status">
-              Vos informations ont été enregistrées.
+              {confirmation}
             </p>
           )}
 
@@ -116,12 +135,18 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
             type="button"
             className="bouton"
             ref={boutonModifier}
-            onClick={() => {
-              setEnregistre(false)
-              setModification(true)
-            }}
+            onClick={() => ouvrir('infos')}
           >
             Modifier mes informations
+          </button>
+
+          <button
+            type="button"
+            className="bouton"
+            ref={boutonMotDePasse}
+            onClick={() => ouvrir('motDePasse')}
+          >
+            Changer mon mot de passe
           </button>
 
           <button

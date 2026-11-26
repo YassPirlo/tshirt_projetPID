@@ -138,7 +138,7 @@ export const getProfil = (signal?: AbortSignal) =>
 
 // US6 : les informations modifiables du profil. Ni id ni mot de passe :
 // le back modifie toujours le compte de la session, et le mot de passe
-// ne fait pas partie de l'US6.
+// se change à part (changerMotDePasse).
 export type ModificationProfil = Omit<Utilisateur, 'id'>
 
 // US6 : enregistre les nouvelles informations et renvoie le compte à jour.
@@ -152,6 +152,22 @@ export const modifierProfil = async (
   // Le back renvoie toujours le compte en cas de succès
   if (!compte) throw new ErreurHttp(500)
   return compte
+}
+
+// Change le mot de passe du compte connecté (le back répond 204).
+// Lève une ErreurHttp 400 si le mot de passe actuel est faux ou si le
+// nouveau est refusé, 401 si la session a expiré.
+export const changerMotDePasse = async (
+  ancienMotDePasse: string,
+  nouveauMotDePasse: string,
+  signal?: AbortSignal,
+) => {
+  await envoyer<void>(
+    'PUT',
+    '/api/profil/mot-de-passe',
+    { ancienMotDePasse, nouveauMotDePasse },
+    signal,
+  )
 }
 
 // US7 : ferme la session côté serveur (le back répond 204, sans corps).

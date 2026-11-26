@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ChangementMotDePasseRequete;
 import com.example.demo.dto.ConnexionRequete;
 import com.example.demo.dto.InscriptionRequete;
 import com.example.demo.dto.ModificationProfilRequete;
@@ -116,6 +117,26 @@ public class UtilisateurService {
         utilisateur.setVille(requete.ville().trim());
         // Le mot de passe et la date d'inscription ne sont pas touchés.
 
+        return Optional.of(utilisateurRepository.save(utilisateur));
+    }
+
+    // Changer le mot de passe du compte connecté.
+    //
+    // Optional vide si le compte n'existe plus (même cas que trouverParId).
+    // Lève MotDePasseIncorrectException si l'ancien mot de passe est faux.
+    // Le nouveau est haché comme à l'inscription : jamais stocké en clair.
+    public Optional<Utilisateur> changerMotDePasse(Long id, ChangementMotDePasseRequete requete) {
+        Optional<Utilisateur> compte = utilisateurRepository.findById(id);
+        if (compte.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Utilisateur utilisateur = compte.get();
+        if (!passwordEncoder.matches(requete.ancienMotDePasse(), utilisateur.getMotDePasse())) {
+            throw new MotDePasseIncorrectException();
+        }
+
+        utilisateur.setMotDePasse(passwordEncoder.encode(requete.nouveauMotDePasse()));
         return Optional.of(utilisateurRepository.save(utilisateur));
     }
 

@@ -26,7 +26,7 @@ function CompteConnecte() {
   return <p>{utilisateur ? `Bienvenue, ${utilisateur.prenom}` : 'Anonyme'}</p>
 }
 
-async function remplirEtEnvoyer() {
+async function remplirEtEnvoyer(confirmation = 'motdepasse123') {
   const user = userEvent.setup()
   await user.type(screen.getByLabelText('Prénom'), 'Loïc')
   await user.type(screen.getByLabelText('Nom'), 'Rossel')
@@ -38,6 +38,7 @@ async function remplirEtEnvoyer() {
     screen.getByLabelText('Mot de passe (8 caractères minimum)'),
     'motdepasse123',
   )
+  await user.type(screen.getByLabelText('Confirmer le mot de passe'), confirmation)
   await user.click(screen.getByRole('button', { name: 'Créer mon compte' }))
 }
 
@@ -56,7 +57,7 @@ function afficher(onInscrit = vi.fn()) {
 }
 
 describe('Inscription (US5 du backlog)', () => {
-  it('affiche les sept champs du formulaire', () => {
+  it('affiche les champs du formulaire, avec la confirmation du mot de passe', () => {
     fauxBack(201, {})
     afficher()
 
@@ -73,6 +74,28 @@ describe('Inscription (US5 du backlog)', () => {
     expect(
       screen.getByLabelText('Mot de passe (8 caractères minimum)'),
     ).toHaveAttribute('type', 'password')
+    expect(screen.getByLabelText('Confirmer le mot de passe')).toHaveAttribute(
+      'type',
+      'password',
+    )
+  })
+
+  // La confirmation sert à éviter une faute de frappe : on bloque avant
+  // l'envoi, le back n'est pas appelé.
+  it('refuse deux mots de passe différents sans rien envoyer', async () => {
+    const faux = fauxBack(201, {})
+    const onInscrit = afficher()
+
+    await remplirEtEnvoyer('autrechose123')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Les deux mots de passe ne sont pas identiques',
+    )
+    const confirmation = screen.getByLabelText('Confirmer le mot de passe')
+    expect(confirmation).toHaveAttribute('aria-invalid', 'true')
+    expect(confirmation).toHaveFocus()
+    expect(faux.mock.calls.some(([url]) => url === '/api/inscription')).toBe(false)
+    expect(onInscrit).not.toHaveBeenCalled()
   })
 
   it('envoie le formulaire, connecte le visiteur puis le redirige', async () => {
@@ -123,6 +146,7 @@ describe('Inscription (US5 du backlog)', () => {
       'aria-invalid',
       'true',
     )
+    expect(screen.getByLabelText('Email')).toHaveFocus()
     expect(onInscrit).not.toHaveBeenCalled()
     expect(screen.getByText('Anonyme')).toBeInTheDocument()
   })

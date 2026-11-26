@@ -14,9 +14,12 @@
 //  - 409 : l'email est déjà pris -> message à côté du champ email ;
 //  - 400 : un champ est refusé par le back -> on affiche son message ;
 //  - autre : message générique (serveur arrêté, réseau…).
+// Avant l'envoi, on vérifie que les deux mots de passe sont identiques :
+// une faute de frappe dans un champ masqué rendrait le compte inutilisable.
+// Rien n'est envoyé au back dans ce cas, la confirmation ne le concerne pas.
 // Les messages ont role="alert" pour être lus par les lecteurs d'écran.
 
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { envoyerJson, ErreurHttp, type Utilisateur } from '../api'
 import { useAuth } from '../ContexteAuth'
 
@@ -29,12 +32,14 @@ type Props = {
 }
 
 const MESSAGE_EMAIL_PRIS = 'Un compte existe déjà avec cet email'
+const MESSAGE_CONFIRMATION = 'Les deux mots de passe ne sont pas identiques'
 
 function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
   const { definirUtilisateur } = useAuth()
 
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
+  const [confirmation, setConfirmation] = useState('')
   const [nom, setNom] = useState('')
   const [prenom, setPrenom] = useState('')
   // US5 : le backlog demande aussi l'adresse
@@ -46,13 +51,25 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
   // l'autre en haut du formulaire.
   const [erreurEmail, setErreurEmail] = useState<string | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
+  const [erreurConfirmation, setErreurConfirmation] = useState<string | null>(null)
   const [envoi, setEnvoi] = useState(false)
+  const champConfirmation = useRef<HTMLInputElement>(null)
+  // En cas d'email déjà pris, on y ramène le focus : le message est juste
+  // en dessous, il ne peut pas passer inaperçu en bas d'un long formulaire.
+  const champEmail = useRef<HTMLInputElement>(null)
 
   const envoyer = async (evenement: FormEvent<HTMLFormElement>) => {
     // Sans ça, le navigateur rechargerait toute la page
     evenement.preventDefault()
     setErreur(null)
     setErreurEmail(null)
+
+    if (motDePasse !== confirmation) {
+      setErreurConfirmation(MESSAGE_CONFIRMATION)
+      champConfirmation.current?.focus()
+      return
+    }
+
     setEnvoi(true)
 
     try {
@@ -70,6 +87,7 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
     } catch (e) {
       if (e instanceof ErreurHttp && e.statut === 409) {
         setErreurEmail(MESSAGE_EMAIL_PRIS)
+        champEmail.current?.focus()
       } else if (e instanceof ErreurHttp && e.statut === 400) {
         setErreur(e.message)
       } else {
@@ -165,6 +183,7 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
           <input
             type="email"
             name="email"
+            ref={champEmail}
             autoComplete="email"
             required
             value={email}
@@ -192,9 +211,36 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
             minLength={8}
             maxLength={72}
             value={motDePasse}
-            onChange={(e) => setMotDePasse(e.target.value)}
+            onChange={(e) => {
+              setMotDePasse(e.target.value)
+              setErreurConfirmation(null)
+            }}
           />
         </label>
+
+        <label>
+          Confirmer le mot de passe
+          <input
+            type="password"
+            name="confirmationMotDePasse"
+            ref={champConfirmation}
+            autoComplete="new-password"
+            required
+            maxLength={72}
+            value={confirmation}
+            onChange={(e) => {
+              setConfirmation(e.target.value)
+              setErreurConfirmation(null)
+            }}
+            aria-invalid={erreurConfirmation ? true : undefined}
+            aria-describedby={erreurConfirmation ? 'erreur-confirmation' : undefined}
+          />
+        </label>
+        {erreurConfirmation && (
+          <p id="erreur-confirmation" className="message message--erreur" role="alert">
+            {erreurConfirmation}
+          </p>
+        )}
 
         <button type="submit" className="bouton" disabled={envoi}>
           {envoi ? 'Création…' : 'Créer mon compte'}

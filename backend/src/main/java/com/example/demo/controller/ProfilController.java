@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ChangementMotDePasseRequete;
 import com.example.demo.dto.ErreurReponse;
 import com.example.demo.dto.ModificationProfilRequete;
 import com.example.demo.dto.UtilisateurReponse;
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-// Le compte connecté : le lire et le modifier (US6), se déconnecter (US7).
+// Le compte connecté : le lire et le modifier (US6), changer son mot de
+// passe, se déconnecter (US7).
 //
 // Les deux endpoints sont ensemble parce qu'ils lisent et détruisent la même
 // session, et qu'ils sont portés par la même page du front (Profil.tsx).
@@ -72,6 +74,23 @@ public class ProfilController {
                 .flatMap(id -> utilisateurService.modifier(id, modification))
                 .<ResponseEntity<?>>map(utilisateur ->
                         ResponseEntity.ok(UtilisateurReponse.depuis(utilisateur)))
+                .orElseGet(ProfilController::nonConnecte);
+    }
+
+    // PUT /api/profil/mot-de-passe : changer son mot de passe.
+    //
+    // Comme pour le profil, le compte modifié est toujours celui de la
+    // session. Réponses :
+    //  - 204 si le mot de passe est changé (rien à renvoyer) ;
+    //  - 401 sans session, ou si le compte a été supprimé entre-temps ;
+    //  - 400 si le mot de passe actuel est faux ou si le nouveau est refusé
+    //    (trop court, trop long) : gérés par GestionnaireErreurs.
+    @PutMapping("/api/profil/mot-de-passe")
+    public ResponseEntity<?> changerMotDePasse(HttpServletRequest requete,
+                                               @Valid @RequestBody ChangementMotDePasseRequete changement) {
+        return SessionUtilisateur.idConnecte(requete)
+                .flatMap(id -> utilisateurService.changerMotDePasse(id, changement))
+                .<ResponseEntity<?>>map(utilisateur -> ResponseEntity.noContent().build())
                 .orElseGet(ProfilController::nonConnecte);
     }
 
