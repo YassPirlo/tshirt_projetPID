@@ -19,19 +19,24 @@ public class UtilisateurService {
 
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdresseService adresseService;
 
     // Injection par constructeur, comme CategorieService et ProduitService.
     // Spring fournit le PasswordEncoder déclaré dans SecuriteConfig.
     public UtilisateurService(UtilisateurRepository utilisateurRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              AdresseService adresseService) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
+        this.adresseService = adresseService;
     }
 
     // US5 : créer un compte.
-    // Lève EmailDejaUtiliseException si l'adresse est déjà prise.
+    // Lève EmailDejaUtiliseException si l'adresse est déjà prise, et
+    // AdresseInvalideException si le code postal ou la ville n'existent pas.
     public Utilisateur inscrire(InscriptionRequete requete) {
         String email = normaliserEmail(requete.email());
+        adresseService.verifier(requete.pays(), requete.codePostal(), requete.ville());
 
         // Vérification applicative, pour pouvoir répondre un message clair.
         // La contrainte UNIQUE en base reste le garde-fou final si deux
@@ -52,6 +57,7 @@ public class UtilisateurService {
                 requete.adresse().trim(),
                 requete.codePostal().trim(),
                 requete.ville().trim());
+        utilisateur.setPays(requete.pays());
 
         return utilisateurRepository.save(utilisateur);
     }
@@ -96,6 +102,7 @@ public class UtilisateurService {
     // compare les id, pas seulement la présence de l'email en base.
     public Optional<Utilisateur> modifier(Long id, ModificationProfilRequete requete) {
         String email = normaliserEmail(requete.email());
+        adresseService.verifier(requete.pays(), requete.codePostal(), requete.ville());
 
         Optional<Utilisateur> compte = utilisateurRepository.findById(id);
         if (compte.isEmpty()) {
@@ -115,6 +122,7 @@ public class UtilisateurService {
         utilisateur.setAdresse(requete.adresse().trim());
         utilisateur.setCodePostal(requete.codePostal().trim());
         utilisateur.setVille(requete.ville().trim());
+        utilisateur.setPays(requete.pays());
         // Le mot de passe et la date d'inscription ne sont pas touchés.
 
         return Optional.of(utilisateurRepository.save(utilisateur));

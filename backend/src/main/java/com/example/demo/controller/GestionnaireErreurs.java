@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ErreurReponse;
+import com.example.demo.service.AdresseInvalideException;
 import com.example.demo.service.EmailDejaUtiliseException;
 import com.example.demo.service.MotDePasseIncorrectException;
 
@@ -42,6 +43,16 @@ public class GestionnaireErreurs {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErreurReponse("Mot de passe actuel incorrect"));
+    }
+
+    // Code postal inexistant, ville qui ne lui correspond pas, pays non
+    // pris en charge. Le message est une phrase fixe d'AdresseService,
+    // jamais une valeur envoyée par le client : on peut le renvoyer.
+    @ExceptionHandler(AdresseInvalideException.class)
+    public ResponseEntity<ErreurReponse> adresseInvalide(AdresseInvalideException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErreurReponse(exception.getMessage()));
     }
 
     // Déclenché quand un @Valid échoue : champ vide, email mal formé, mot de

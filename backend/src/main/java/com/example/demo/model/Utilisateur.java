@@ -47,9 +47,20 @@ public class Utilisateur {
     @Column(nullable = false, length = 100)
     private String ville;
 
+    // Code pays à deux lettres. Seule la Belgique (BE) pour l'instant.
+    private static final String PAYS_PAR_DEFAUT = "BE";
+
+    @Column(nullable = false, length = 2)
+    private String pays;
+
     // Renseignée au moment de l'inscription (colonne "date_inscription")
     @Column(nullable = false)
     private LocalDateTime dateInscription;
+
+    // Date d'acceptation des conditions générales de vente (colonne
+    // "cgv_acceptees_le"), preuve de l'accord du client.
+    @Column(nullable = false)
+    private LocalDateTime cgvAccepteesLe;
 
     // Constructeur vide obligatoire : Hibernate l'utilise pour recréer
     // l'objet à partir d'une ligne de la base.
@@ -65,7 +76,12 @@ public class Utilisateur {
         this.adresse = adresse;
         this.codePostal = codePostal;
         this.ville = ville;
+        this.pays = PAYS_PAR_DEFAUT;
         this.dateInscription = LocalDateTime.now();
+        // Un compte n'est créé qu'à l'inscription, et l'inscription est
+        // refusée sans la case des CGV cochée (InscriptionRequete) : la
+        // création du compte est donc le moment de l'acceptation.
+        this.cgvAccepteesLe = this.dateInscription;
     }
 
     public Long getId() {
@@ -134,5 +150,17 @@ public class Utilisateur {
 
     public void setDateInscription(LocalDateTime dateInscription) {
         this.dateInscription = dateInscription;
+    }
+
+    public String getPays() {
+        return pays;
+    }
+
+    public void setPays(String pays) {
+        this.pays = pays;
+    }
+
+    public LocalDateTime getCgvAccepteesLe() {
+        return cgvAccepteesLe;
     }
 }

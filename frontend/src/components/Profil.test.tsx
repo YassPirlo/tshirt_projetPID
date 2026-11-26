@@ -13,6 +13,7 @@ const compte = {
   adresse: '12 rue des Tests',
   codePostal: '1000',
   ville: 'Bruxelles',
+  pays: 'BE',
 }
 
 // Faux back : seul /api/profil est appelé (par FournisseurAuth, au
@@ -50,6 +51,8 @@ describe('Profil (US6) et déconnexion (US7)', () => {
     expect(screen.getByText('12 rue des Tests')).toBeInTheDocument()
     expect(screen.getByText('1000')).toBeInTheDocument()
     expect(screen.getByText('Bruxelles')).toBeInTheDocument()
+    // Le nom du pays, pas son code
+    expect(screen.getByText('Belgique')).toBeInTheDocument()
   })
 
   it('propose de se connecter à un visiteur', async () => {

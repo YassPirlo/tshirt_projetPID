@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../ContexteAuth'
+import { nomDuPays } from '../pays'
 import ChangementMotDePasse from './ChangementMotDePasse'
 import ModificationProfil from './ModificationProfil'
 
@@ -123,6 +124,8 @@ function Profil({ onAccueil, onDeconnexion, onConnexion }: Props) {
             <dd>{utilisateur.codePostal}</dd>
             <dt>Ville</dt>
             <dd>{utilisateur.ville}</dd>
+            <dt>Pays</dt>
+            <dd>{nomDuPays(utilisateur.pays)}</dd>
           </dl>
 
           {erreur && (

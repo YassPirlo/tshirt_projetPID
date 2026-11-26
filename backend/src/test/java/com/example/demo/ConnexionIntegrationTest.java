@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+// L'inscription vérifie le code postal et la ville : il faut les localités
+@Sql("/localites-test.sql")
 class ConnexionIntegrationTest {
 
     @Autowired
@@ -42,7 +45,7 @@ class ConnexionIntegrationTest {
     void creerUnCompte() {
         utilisateurService.inscrire(new InscriptionRequete(
                 "yassine@mail.be", "motdepasse123", "Vitullo", "Yassine",
-                "12 rue des Tests", "1000", "Bruxelles"));
+                "12 rue des Tests", "1000", "Bruxelles", "BE", true));
     }
 
     private MvcResult seConnecter(String email, String motDePasse, int statutAttendu)

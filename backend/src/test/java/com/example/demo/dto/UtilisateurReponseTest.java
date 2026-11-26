@@ -27,7 +27,7 @@ class UtilisateurReponseTest {
         // Aucun champ du record ne doit s'appeler "motDePasse"
         assertThat(UtilisateurReponse.class.getRecordComponents())
                 .extracting(composant -> composant.getName())
-                .containsExactly("id", "email", "nom", "prenom", "adresse", "codePostal", "ville");
+                .containsExactly("id", "email", "nom", "prenom", "adresse", "codePostal", "ville", "pays");
 
         // Et le hachage ne doit apparaître nulle part dans sa représentation
         assertThat(reponse.toString()).doesNotContain("$2a$");

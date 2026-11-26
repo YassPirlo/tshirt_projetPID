@@ -42,7 +42,7 @@ class GestionnaireErreursTest {
     @Test
     void traduitUnChampInvalideEn400AvecSonMessage() {
         BeanPropertyBindingResult erreurs = new BeanPropertyBindingResult(
-                new InscriptionRequete("", "", "", "", "", "", ""), "inscriptionRequete");
+                new InscriptionRequete("", "", "", "", "", "", "", "", false), "inscriptionRequete");
         erreurs.rejectValue("email", "NotBlank", "L'email est obligatoire");
 
         MethodArgumentNotValidException exception =
@@ -63,7 +63,7 @@ class GestionnaireErreursTest {
     @Test
     void messageParDefautSiAucuneErreurDeChamp() {
         BeanPropertyBindingResult erreurs = new BeanPropertyBindingResult(
-                new InscriptionRequete("", "", "", "", "", "", ""), "inscriptionRequete");
+                new InscriptionRequete("", "", "", "", "", "", "", "", false), "inscriptionRequete");
 
         MethodArgumentNotValidException exception =
                 mock(MethodArgumentNotValidException.class);

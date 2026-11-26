@@ -44,6 +44,8 @@ export type Utilisateur = {
   adresse: string
   codePostal: string
   ville: string
+  // Code pays à deux lettres (BE). Seule la Belgique pour l'instant.
+  pays: string
 }
 
 // Erreur qui conserve le code HTTP, pour que l'appelant puisse réagir
@@ -129,6 +131,11 @@ export const getProduitsDeCategorie = (id: number, signal?: AbortSignal) =>
 // US3
 export const getProduit = (id: number, signal?: AbortSignal) =>
   lireJson<Produit>(`/api/produits/${id}`, signal)
+
+// Les villes d'un code postal belge, par ordre alphabétique
+// (4000 -> Glain, Liège, Rocourt). Liste vide si le code n'existe pas.
+export const getLocalites = (codePostal: string, signal?: AbortSignal) =>
+  lireJson<string[]>(`/api/localites?codePostal=${encodeURIComponent(codePostal)}`, signal)
 
 // US6 : le compte actuellement connecté, d'après le cookie de session.
 // Lève une ErreurHttp 401 si personne n'est connecté : c'est ce que
