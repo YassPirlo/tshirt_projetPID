@@ -1,7 +1,9 @@
 package com.example.demo.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 // Données envoyées par le formulaire d'inscription (US5).
@@ -50,5 +52,20 @@ public record InscriptionRequete(
 
         @NotBlank(message = "La ville est obligatoire")
         @Size(max = 100, message = "La ville ne peut pas dépasser 100 caractères")
-        String ville) {
+        String ville,
+
+        // Code pays à deux lettres (BE). Code postal et ville sont vérifiés
+        // pour ce pays par AdresseService.
+        @NotBlank(message = "Le pays est obligatoire")
+        @Size(max = 2, message = "Le pays doit être un code à deux lettres")
+        String pays,
+
+        // Case « J'accepte les conditions générales de vente ».
+        // Boolean et non boolean : un champ absent du JSON donne null, que
+        // @NotNull refuse avec notre message. Avec boolean, Jackson échouait
+        // avant la validation et le front recevait une erreur illisible.
+        // @AssertTrue seul ne suffit pas : il considère null comme valide.
+        @NotNull(message = "Vous devez accepter les conditions générales de vente")
+        @AssertTrue(message = "Vous devez accepter les conditions générales de vente")
+        Boolean cgvAcceptees) {
 }

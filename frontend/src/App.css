@@ -1166,3 +1166,104 @@ main {
     transition: none !important;
   }
 }
+
+/* ---------- Champs d'adresse, jauge du mot de passe, CGV ---------- */
+
+/* Les <select> (pays, ville) ont la même allure que les champs texte */
+.formulaire select {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--gris);
+  border-radius: 0;
+  background: var(--blanc);
+  color: var(--encre);
+  font: inherit;
+  font-weight: 400;
+}
+
+.formulaire select:disabled {
+  border-color: var(--trait);
+  color: var(--gris);
+}
+
+.formulaire .aide-champ {
+  margin-top: -8px;
+  font-size: 0.9rem;
+}
+
+/* Jauge : une barre qui se remplit, sa couleur va du rouge au vert.
+   Le niveau est aussi écrit en toutes lettres (la couleur seule ne
+   suffit pas, ni pour les daltoniens ni pour les lecteurs d'écran). */
+.jauge {
+  display: grid;
+  gap: 6px;
+  margin-top: -6px;
+}
+
+.jauge-barre {
+  height: 8px;
+  background: var(--trait);
+}
+
+.jauge-remplissage {
+  height: 100%;
+  background: var(--jauge-couleur);
+  transition: width 0.2s ease;
+}
+
+.jauge--0 { --jauge-couleur: #ff6b5b; }
+.jauge--1 { --jauge-couleur: #ff9f45; }
+.jauge--2 { --jauge-couleur: #f2d04b; }
+.jauge--3 { --jauge-couleur: #a6d96a; }
+.jauge--4 { --jauge-couleur: #4fc98a; }
+
+.formulaire .jauge-texte {
+  margin: 0;
+  color: var(--encre);
+  font-size: 0.95rem;
+}
+
+.jauge-conseils {
+  margin: 0;
+  padding-left: 1.2em;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+/* Case à cocher et son texte sur une ligne (les autres <label> du
+   formulaire empilent le libellé au-dessus du champ). */
+.formulaire .case-a-cocher {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 400;
+}
+
+.formulaire .case-a-cocher input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--encre);
+}
+
+.case-a-cocher a {
+  color: var(--encre);
+}
+
+/* Texte lu par les lecteurs d'écran mais invisible à l'écran */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jauge-remplissage {
+    transition: none;
+  }
+}

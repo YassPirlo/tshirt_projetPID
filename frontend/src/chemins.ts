@@ -13,6 +13,7 @@ export const chemins = {
   mentions: '/mentions-legales',
   confidentialite: '/confidentialite',
   cookies: '/cookies',
+  cgv: '/conditions-generales',
 }
 
 // Les mêmes adresses sous forme de modèles, pour <Route path="…"> :

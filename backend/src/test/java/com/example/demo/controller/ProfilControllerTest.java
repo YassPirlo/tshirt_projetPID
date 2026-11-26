@@ -126,7 +126,7 @@ class ProfilControllerTest {
 
     private static final String MODIFICATION = """
             {"email":"marie@mail.be","nom":"Dupont","prenom":"Marie",
-             "adresse":"5 avenue Louise","codePostal":"1050","ville":"Ixelles"}
+             "adresse":"5 avenue Louise","codePostal":"1050","ville":"Ixelles","pays":"BE"}
             """;
 
     private Utilisateur compteModifie() {

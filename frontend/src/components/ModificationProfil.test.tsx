@@ -16,12 +16,26 @@ const compte = {
   adresse: '12 rue des Tests',
   codePostal: '1000',
   ville: 'Bruxelles',
+  pays: 'BE',
 }
+
+// Les villes de quelques codes postaux, comme GET /api/localites
+const LOCALITES: Record<string, string[]> = {
+  '1000': ['Brussel', 'Bruxelles'],
+  '1050': ['Elsene', 'Ixelles'],
+}
+
+function reponseLocalites(url: string) {
+  const code = new URL(url, 'http://test').searchParams.get('codePostal') ?? ''
+  return new Response(JSON.stringify(LOCALITES[code] ?? []), { status: 200 })
+}
+
 
 // Faux back : GET /api/profil répond le compte (appel de FournisseurAuth au
 // démarrage), PUT /api/profil répond ce qu'on lui donne.
 function fauxBack(statut: number, corps: unknown) {
   const faux = vi.fn(async (url: string, options?: RequestInit) => {
+    if (url.startsWith('/api/localites')) return reponseLocalites(url)
     if (url === '/api/profil' && options?.method === 'PUT') {
       return new Response(JSON.stringify(corps), { status: statut })
     }
@@ -59,6 +73,8 @@ async function ouvrirLeFormulaire() {
   await user.click(
     await screen.findByRole('button', { name: 'Modifier mes informations' }),
   )
+  // Les villes du code postal enregistré sont chargées
+  await screen.findByRole('option', { name: 'Bruxelles' })
   return user
 }
 
@@ -85,6 +101,7 @@ describe('Modification du profil (US6)', () => {
     expect(screen.getByLabelText('Adresse')).toHaveValue('12 rue des Tests')
     expect(screen.getByLabelText('Code postal')).toHaveValue('1000')
     expect(screen.getByLabelText('Ville')).toHaveValue('Bruxelles')
+    expect(screen.getByLabelText('Pays')).toHaveValue('BE')
     expect(screen.getByLabelText('Email')).toHaveValue('yassine@mail.be')
     expect(screen.queryByLabelText(/Mot de passe/)).not.toBeInTheDocument()
     // Le focus clavier est placé dans le formulaire
@@ -92,19 +109,29 @@ describe('Modification du profil (US6)', () => {
   })
 
   it('envoie un PUT, met à jour le compte partout et l’annonce', async () => {
-    const faux = fauxBack(200, { ...compte, prenom: 'Marie', ville: 'Ixelles' })
+    const faux = fauxBack(200, {
+      ...compte,
+      prenom: 'Marie',
+      codePostal: '1050',
+      ville: 'Ixelles',
+    })
     afficher()
     const user = await ouvrirLeFormulaire()
 
     await remplacer(user, 'Prénom', 'Marie')
-    await remplacer(user, 'Ville', 'Ixelles')
+    // Nouveau code postal : la ville se choisit parmi les siennes
+    await remplacer(user, 'Code postal', '1050')
+    await user.selectOptions(
+      screen.getByLabelText('Ville'),
+      await screen.findByRole('option', { name: 'Ixelles' }),
+    )
     await user.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Vos informations ont été enregistrées.',
     )
 
-    // Le bon endpoint, en PUT, avec les six champs et sans id
+    // Le bon endpoint, en PUT, avec les sept champs et sans id
     const appel = faux.mock.calls.find(
       ([url, options]) => url === '/api/profil' && options?.method === 'PUT',
     )
@@ -114,8 +141,9 @@ describe('Modification du profil (US6)', () => {
       nom: 'Vitullo',
       prenom: 'Marie',
       adresse: '12 rue des Tests',
-      codePostal: '1000',
+      codePostal: '1050',
       ville: 'Ixelles',
+      pays: 'BE',
     })
 
     // Les informations affichées sont celles renvoyées par le back...

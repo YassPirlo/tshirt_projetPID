@@ -43,8 +43,9 @@ function PolitiqueConfidentialite({ onAccueil, onCookies }: Props) {
       <p>
         <strong>Si vous créez un compte</strong>, nous enregistrons votre
         adresse e-mail, votre nom, votre prénom, votre adresse postale (rue,
-        code postal, ville), votre mot de passe et la date de création du
-        compte. Ils servent uniquement à vous identifier quand vous vous
+        code postal, ville, pays), votre mot de passe, la date de création du
+        compte et la date à laquelle vous avez accepté les conditions
+        générales de vente. Ils servent uniquement à vous identifier quand vous vous
         connectez et à afficher votre profil, que vous pouvez modifier à tout
         moment depuis la page Mon profil (article 6.1.b du RGPD :
         ces données sont nécessaires au service que vous demandez). Ils sont

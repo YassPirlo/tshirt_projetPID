@@ -1,8 +1,9 @@
 // US6 — Modifier ses informations personnelles.
 //
 // Formulaire contrôlé, comme l'inscription, mais pré-rempli avec le compte
-// connecté. Pas de mot de passe : le changer demanderait l'ancien, ce
-// n'est pas dans le périmètre de l'US6.
+// connecté. Pays, code postal et ville passent par ChampsAdresse, comme à
+// l'inscription. Pas de mot de passe : il se change à part, avec l'ancien
+// (ChangementMotDePasse).
 //
 // À l'envoi :
 //  1. PUT /api/profil avec modifierProfil() ;
@@ -20,6 +21,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErreurHttp, modifierProfil, type Utilisateur } from '../api'
 import { useAuth } from '../ContexteAuth'
+import { PAYS_PAR_DEFAUT } from '../pays'
+import ChampsAdresse from './ChampsAdresse'
 
 type Props = {
   // Le compte tel qu'il est avant modification
@@ -40,6 +43,8 @@ function ModificationProfil({ utilisateur, onEnregistre, onAnnuler }: Props) {
   const [codePostal, setCodePostal] = useState(utilisateur.codePostal)
   const [ville, setVille] = useState(utilisateur.ville)
   const [email, setEmail] = useState(utilisateur.email)
+  // Comptes créés avant l'ajout du pays : la Belgique par défaut
+  const [pays, setPays] = useState(utilisateur.pays || PAYS_PAR_DEFAUT)
 
   const [erreurEmail, setErreurEmail] = useState<string | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -66,6 +71,7 @@ function ModificationProfil({ utilisateur, onEnregistre, onAnnuler }: Props) {
         adresse,
         codePostal,
         ville,
+        pays,
       })
       definirUtilisateur(compte)
       onEnregistre()
@@ -132,32 +138,14 @@ function ModificationProfil({ utilisateur, onEnregistre, onAnnuler }: Props) {
           />
         </label>
 
-        <label>
-          Code postal
-          <input
-            type="text"
-            name="codePostal"
-            autoComplete="postal-code"
-            inputMode="numeric"
-            required
-            maxLength={10}
-            value={codePostal}
-            onChange={(e) => setCodePostal(e.target.value)}
-          />
-        </label>
-
-        <label>
-          Ville
-          <input
-            type="text"
-            name="ville"
-            autoComplete="address-level2"
-            required
-            maxLength={100}
-            value={ville}
-            onChange={(e) => setVille(e.target.value)}
-          />
-        </label>
+        <ChampsAdresse
+          pays={pays}
+          codePostal={codePostal}
+          ville={ville}
+          onPays={setPays}
+          onCodePostal={setCodePostal}
+          onVille={setVille}
+        />
 
         <label>
           Email

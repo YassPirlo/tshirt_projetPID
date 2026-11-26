@@ -16,6 +16,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { changerMotDePasse, ErreurHttp } from '../api'
+import JaugeMotDePasse from './JaugeMotDePasse'
 
 type Props = {
   // Appelé après un changement réussi
@@ -104,8 +105,10 @@ function ChangementMotDePasse({ onEnregistre, onAnnuler }: Props) {
               setNouveau(e.target.value)
               setErreurConfirmation(null)
             }}
+            aria-describedby={nouveau ? 'conseils-nouveau-mot-de-passe' : undefined}
           />
         </label>
+        <JaugeMotDePasse motDePasse={nouveau} id="conseils-nouveau-mot-de-passe" />
 
         <label>
           Confirmer le nouveau mot de passe

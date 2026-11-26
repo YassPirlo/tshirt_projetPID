@@ -17,7 +17,8 @@ public record UtilisateurReponse(
         // Ce sont celles de l'utilisateur lui-même : il les voit, rien de plus.
         String adresse,
         String codePostal,
-        String ville) {
+        String ville,
+        String pays) {
 
     // Méthode de conversion : entité -> réponse.
     // Centralisée ici, pour qu'aucun controller n'ait à y penser.
@@ -29,6 +30,7 @@ public record UtilisateurReponse(
                 utilisateur.getPrenom(),
                 utilisateur.getAdresse(),
                 utilisateur.getCodePostal(),
-                utilisateur.getVille());
+                utilisateur.getVille(),
+                utilisateur.getPays());
     }
 }

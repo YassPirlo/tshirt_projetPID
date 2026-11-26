@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.InscriptionRequete;
 import com.example.demo.model.Utilisateur;
+import com.example.demo.service.AdresseInvalideException;
 import com.example.demo.service.EmailDejaUtiliseException;
 import com.example.demo.service.UtilisateurService;
 import com.example.demo.session.SessionUtilisateur;
@@ -43,7 +44,9 @@ class InscriptionControllerTest {
               "prenom": "Loïc",
               "adresse": "12 rue des Tests",
               "codePostal": "1000",
-              "ville": "Bruxelles"
+              "ville": "Bruxelles",
+              "pays": "BE",
+              "cgvAcceptees": true
             }
             """;
 
@@ -128,7 +131,9 @@ class InscriptionControllerTest {
                                   "prenom": "Loïc",
                                   "adresse": "12 rue des Tests",
                                   "codePostal": "1000",
-                                  "ville": "Bruxelles"
+                                  "ville": "Bruxelles",
+                                  "pays": "BE",
+                                  "cgvAcceptees": true
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
@@ -174,7 +179,9 @@ class InscriptionControllerTest {
                                   "prenom": "Loïc",
                                   "adresse": "12 rue des Tests",
                                   "codePostal": "1000",
-                                  "ville": "Bruxelles"
+                                  "ville": "Bruxelles",
+                                  "pays": "BE",
+                                  "cgvAcceptees": true
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
@@ -182,5 +189,44 @@ class InscriptionControllerTest {
                         .value("Le mot de passe doit faire au moins 8 caractères"));
 
         verify(utilisateurService, never()).inscrire(any());
+    }
+
+    // Case des conditions générales non cochée : refusé avant le service
+    @Test
+    void repond400SiLesCgvNeSontPasAcceptees() throws Exception {
+        mockMvc.perform(post("/api/inscription")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORPS_VALIDE.replace("\"cgvAcceptees\": true", "\"cgvAcceptees\": false")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("Vous devez accepter les conditions générales de vente"));
+
+        verify(utilisateurService, never()).inscrire(any());
+    }
+
+    // Champ absent du JSON : il vaut false, donc refusé aussi
+    @Test
+    void repond400SiLaCaseDesCgvManque() throws Exception {
+        mockMvc.perform(post("/api/inscription")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORPS_VALIDE.replace(",\n  \"cgvAcceptees\": true", "")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("Vous devez accepter les conditions générales de vente"));
+
+        verify(utilisateurService, never()).inscrire(any());
+    }
+
+    // Code postal ou ville inexistants : le service refuse, le message suit
+    @Test
+    void repond400SiLAdresseNExistePas() throws Exception {
+        when(utilisateurService.inscrire(any()))
+                .thenThrow(new AdresseInvalideException("Ce code postal n'existe pas en Belgique"));
+
+        mockMvc.perform(post("/api/inscription")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CORPS_VALIDE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Ce code postal n'existe pas en Belgique"));
     }
 }

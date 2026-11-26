@@ -8,8 +8,20 @@ import { rendreAvecAuth } from '../test/rendre'
 // Faux back : /api/profil répond 401 (personne n'est connecté au départ,
 // c'est l'appel que fait FournisseurAuth au démarrage), et
 // /api/inscription répond ce qu'on lui donne.
+// Les villes de quelques codes postaux, comme GET /api/localites
+const LOCALITES: Record<string, string[]> = {
+  '1000': ['Brussel', 'Bruxelles'],
+  '1050': ['Elsene', 'Ixelles'],
+}
+
+function reponseLocalites(url: string) {
+  const code = new URL(url, 'http://test').searchParams.get('codePostal') ?? ''
+  return new Response(JSON.stringify(LOCALITES[code] ?? []), { status: 200 })
+}
+
 function fauxBack(statut: number, corps: unknown) {
   const faux = vi.fn(async (url: string) => {
+    if (url.startsWith('/api/localites')) return reponseLocalites(url)
     if (url === '/api/profil') return new Response('{}', { status: 401 })
     if (url === '/api/inscription')
       return new Response(JSON.stringify(corps), { status: statut })
@@ -32,13 +44,20 @@ async function remplirEtEnvoyer(confirmation = 'motdepasse123') {
   await user.type(screen.getByLabelText('Nom'), 'Rossel')
   await user.type(screen.getByLabelText('Adresse'), '12 rue des Tests')
   await user.type(screen.getByLabelText('Code postal'), '1000')
-  await user.type(screen.getByLabelText('Ville'), 'Bruxelles')
+  // Deux localités pour 1000 : on choisit la sienne dans la liste
+  await user.selectOptions(
+    screen.getByLabelText('Ville'),
+    await screen.findByRole('option', { name: 'Bruxelles' }),
+  )
   await user.type(screen.getByLabelText('Email'), 'loic@mail.be')
   await user.type(
     screen.getByLabelText('Mot de passe (8 caractères minimum)'),
     'motdepasse123',
   )
   await user.type(screen.getByLabelText('Confirmer le mot de passe'), confirmation)
+  await user.click(
+    screen.getByRole('checkbox', { name: /J’ai lu et j’accepte les conditions générales de vente/ }),
+  )
   await user.click(screen.getByRole('button', { name: 'Créer mon compte' }))
 }
 
@@ -128,6 +147,8 @@ describe('Inscription (US5 du backlog)', () => {
       adresse: '12 rue des Tests',
       codePostal: '1000',
       ville: 'Bruxelles',
+      pays: 'BE',
+      cgvAcceptees: true,
     })
 
     expect(await screen.findByText('Bienvenue, Loïc')).toBeInTheDocument()
@@ -172,5 +193,42 @@ describe('Inscription (US5 du backlog)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Impossible de créer le compte',
     )
+  })
+
+  it('affiche la jauge de sécurité pendant la saisie du mot de passe', async () => {
+    fauxBack(201, {})
+    afficher()
+    const user = userEvent.setup()
+
+    // Rien tant que le champ est vide
+    expect(screen.queryByRole('meter')).not.toBeInTheDocument()
+
+    const champ = screen.getByLabelText('Mot de passe (8 caractères minimum)')
+    await user.type(champ, 'azerty123')
+    expect(screen.getByRole('meter', { name: 'Sécurité du mot de passe' })).toHaveAttribute(
+      'aria-valuetext',
+      'Très faible',
+    )
+
+    await user.clear(champ)
+    await user.type(champ, 'Tshirts-FACE-2026')
+    expect(screen.getByRole('meter')).toHaveAttribute('aria-valuetext', 'Excellent')
+    // Le champ renvoie aux conseils de la jauge
+    expect(champ).toHaveAttribute('aria-describedby', 'conseils-mot-de-passe')
+  })
+
+  it('exige la case des conditions générales, avec un lien vers elles', () => {
+    fauxBack(201, {})
+    afficher()
+
+    const caseCgv = screen.getByRole('checkbox', {
+      name: /J’ai lu et j’accepte les conditions générales de vente/,
+    })
+    expect(caseCgv).toBeRequired()
+    expect(caseCgv).not.toBeChecked()
+    const lien = screen.getByRole('link', { name: /conditions générales de vente/ })
+    expect(lien).toHaveAttribute('href', '/conditions-generales')
+    // Nouvel onglet, pour ne pas perdre le formulaire rempli
+    expect(lien).toHaveAttribute('target', '_blank')
   })
 })

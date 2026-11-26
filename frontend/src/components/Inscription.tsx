@@ -17,11 +17,18 @@
 // Avant l'envoi, on vérifie que les deux mots de passe sont identiques :
 // une faute de frappe dans un champ masqué rendrait le compte inutilisable.
 // Rien n'est envoyé au back dans ce cas, la confirmation ne le concerne pas.
+// Pays, code postal et ville sont vérifiés par ChampsAdresse (la ville se
+// choisit dans la liste des localités du code), la jauge aide à choisir un
+// mot de passe solide, et la case des CGV est obligatoire.
 // Les messages ont role="alert" pour être lus par les lecteurs d'écran.
 
 import { useRef, useState, type FormEvent } from 'react'
 import { envoyerJson, ErreurHttp, type Utilisateur } from '../api'
 import { useAuth } from '../ContexteAuth'
+import { chemins } from '../chemins'
+import { PAYS_PAR_DEFAUT } from '../pays'
+import ChampsAdresse from './ChampsAdresse'
+import JaugeMotDePasse from './JaugeMotDePasse'
 
 type Props = {
   onAccueil: () => void
@@ -46,6 +53,8 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
   const [adresse, setAdresse] = useState('')
   const [codePostal, setCodePostal] = useState('')
   const [ville, setVille] = useState('')
+  const [pays, setPays] = useState(PAYS_PAR_DEFAUT)
+  const [cgvAcceptees, setCgvAcceptees] = useState(false)
 
   // Deux erreurs séparées : celle de l'email s'affiche sous le champ email,
   // l'autre en haut du formulaire.
@@ -81,6 +90,8 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
         adresse,
         codePostal,
         ville,
+        pays,
+        cgvAcceptees,
       })
       if (compte) definirUtilisateur(compte)
       onInscrit()
@@ -151,32 +162,14 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
           />
         </label>
 
-        <label>
-          Code postal
-          <input
-            type="text"
-            name="codePostal"
-            autoComplete="postal-code"
-            inputMode="numeric"
-            required
-            maxLength={10}
-            value={codePostal}
-            onChange={(e) => setCodePostal(e.target.value)}
-          />
-        </label>
-
-        <label>
-          Ville
-          <input
-            type="text"
-            name="ville"
-            autoComplete="address-level2"
-            required
-            maxLength={100}
-            value={ville}
-            onChange={(e) => setVille(e.target.value)}
-          />
-        </label>
+        <ChampsAdresse
+          pays={pays}
+          codePostal={codePostal}
+          ville={ville}
+          onPays={setPays}
+          onCodePostal={setCodePostal}
+          onVille={setVille}
+        />
 
         <label>
           Email
@@ -215,8 +208,10 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
               setMotDePasse(e.target.value)
               setErreurConfirmation(null)
             }}
+            aria-describedby={motDePasse ? 'conseils-mot-de-passe' : undefined}
           />
         </label>
+        <JaugeMotDePasse motDePasse={motDePasse} id="conseils-mot-de-passe" />
 
         <label>
           Confirmer le mot de passe
@@ -241,6 +236,27 @@ function Inscription({ onAccueil, onInscrit, onConnexion }: Props) {
             {erreurConfirmation}
           </p>
         )}
+
+        {/* Case obligatoire (required) : le navigateur bloque l'envoi tant
+            qu'elle n'est pas cochée, et le back refuse aussi sans elle.
+            Le lien s'ouvre dans un nouvel onglet pour ne pas perdre le
+            formulaire déjà rempli. */}
+        <label className="case-a-cocher">
+          <input
+            type="checkbox"
+            name="cgvAcceptees"
+            required
+            checked={cgvAcceptees}
+            onChange={(e) => setCgvAcceptees(e.target.checked)}
+          />
+          <span>
+            J’ai lu et j’accepte les{' '}
+            <a href={chemins.cgv} target="_blank" rel="noopener noreferrer">
+              conditions générales de vente
+              <span className="visuellement-cache"> (s’ouvre dans un nouvel onglet)</span>
+            </a>
+          </span>
+        </label>
 
         <button type="submit" className="bouton" disabled={envoi}>
           {envoi ? 'Création…' : 'Créer mon compte'}

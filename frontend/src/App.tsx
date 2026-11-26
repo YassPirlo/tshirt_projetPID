@@ -26,6 +26,7 @@ import BandeauCookies from './components/BandeauCookies'
 import PolitiqueConfidentialite from './components/PolitiqueConfidentialite'
 import PolitiqueCookies from './components/PolitiqueCookies'
 import MentionsLegales from './components/MentionsLegales'
+import ConditionsGenerales from './components/ConditionsGenerales'
 import Inscription from './components/Inscription'
 import Connexion from './components/Connexion'
 import Profil from './components/Profil'
@@ -47,6 +48,7 @@ const TITRES: Record<string, string> = {
   [chemins.mentions]: 'Mentions légales',
   [chemins.confidentialite]: 'Confidentialité',
   [chemins.cookies]: 'Cookies',
+  [chemins.cgv]: 'Conditions générales de vente',
 }
 
 // App charge les données et choisit quoi afficher d'après l'adresse.
@@ -419,6 +421,16 @@ function App() {
             }
           />
 
+          <Route
+            path={chemins.cgv}
+            element={
+              <ConditionsGenerales
+                onAccueil={revenirAccueil}
+                onConfidentialite={() => navigate(chemins.confidentialite)}
+              />
+            }
+          />
+
           {/* Toute autre adresse */}
           <Route
             path="*"
@@ -460,6 +472,14 @@ function App() {
                   onClick={() => navigate(chemins.mentions)}
                 >
                   Mentions légales
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigate(chemins.cgv)}
+                >
+                  Conditions générales de vente
                 </button>
               </li>
               <li>

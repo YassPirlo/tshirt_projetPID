@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,16 +37,21 @@ class UtilisateurServiceTest {
     // produit est réellement vérifiable par BCrypt.
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // Simulé : par défaut, verifier() ne lève rien (adresse valide).
+    // AdresseServiceTest teste la vérification elle-même.
+    @Mock
+    private AdresseService adresseService;
+
     private UtilisateurService utilisateurService;
 
     @BeforeEach
     void preparer() {
-        utilisateurService = new UtilisateurService(utilisateurRepository, passwordEncoder);
+        utilisateurService = new UtilisateurService(utilisateurRepository, passwordEncoder, adresseService);
     }
 
     private InscriptionRequete requete(String email) {
         return new InscriptionRequete(email, "motdepasse123", "Vitullo", "Yassine",
-                "12 rue des Tests", "1000", "Bruxelles");
+                "12 rue des Tests", "1000", "Bruxelles", "BE", true);
     }
 
     // Renvoie l'utilisateur que le service a tenté d'enregistrer
@@ -90,7 +96,7 @@ class UtilisateurServiceTest {
         when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
 
         utilisateurService.inscrire(new InscriptionRequete("yassine@mail.be", "motdepasse123",
-                "Vitullo", "Yassine", "  12 rue des Tests ", " 1000 ", " Bruxelles  "));
+                "Vitullo", "Yassine", "  12 rue des Tests ", " 1000 ", " Bruxelles  ", "BE", true));
 
         Utilisateur enregistre = capturerUtilisateurEnregistre();
         assertThat(enregistre.getAdresse()).isEqualTo("12 rue des Tests");
@@ -214,7 +220,7 @@ class UtilisateurServiceTest {
 
     private ModificationProfilRequete modification(String email) {
         return new ModificationProfilRequete(email, "Dupont", "Marie",
-                "5 avenue Louise", "1050", "Ixelles");
+                "5 avenue Louise", "1050", "Ixelles", "BE");
     }
 
     @Test
@@ -258,7 +264,7 @@ class UtilisateurServiceTest {
         when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
 
         utilisateurService.modifier(42L, new ModificationProfilRequete("  Marie@Mail.BE ",
-                " Dupont ", " Marie ", " 5 avenue Louise ", " 1050 ", " Ixelles "));
+                " Dupont ", " Marie ", " 5 avenue Louise ", " 1050 ", " Ixelles ", "BE"));
 
         Utilisateur enregistre = capturerUtilisateurEnregistre();
         assertThat(enregistre.getEmail()).isEqualTo("marie@mail.be");
@@ -349,6 +355,43 @@ class UtilisateurServiceTest {
 
         assertThat(utilisateurService.changerMotDePasse(42L,
                 new ChangementMotDePasseRequete("motdepasse123", "nouveauSecret9"))).isEmpty();
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
+    }
+
+    // Adresse : le service délègue la vérification à AdresseService
+
+    @Test
+    void verifieLAdresseAvantDInscrire() {
+        when(utilisateurRepository.findByEmail("yassine@mail.be")).thenReturn(Optional.empty());
+        when(utilisateurRepository.save(any(Utilisateur.class))).thenAnswer(i -> i.getArgument(0));
+
+        utilisateurService.inscrire(requete("yassine@mail.be"));
+
+        verify(adresseService).verifier("BE", "1000", "Bruxelles");
+        Utilisateur enregistre = capturerUtilisateurEnregistre();
+        assertThat(enregistre.getPays()).isEqualTo("BE");
+        assertThat(enregistre.getCgvAccepteesLe()).isNotNull();
+    }
+
+    @Test
+    void nInscritPasSiLAdresseEstInvalide() {
+        doThrow(new AdresseInvalideException("Ce code postal n'existe pas en Belgique"))
+                .when(adresseService).verifier("BE", "1000", "Bruxelles");
+
+        assertThatThrownBy(() -> utilisateurService.inscrire(requete("yassine@mail.be")))
+                .isInstanceOf(AdresseInvalideException.class);
+
+        verify(utilisateurRepository, never()).save(any(Utilisateur.class));
+    }
+
+    @Test
+    void neModifiePasLeProfilSiLAdresseEstInvalide() {
+        doThrow(new AdresseInvalideException("La ville ne correspond pas à ce code postal"))
+                .when(adresseService).verifier("BE", "1050", "Ixelles");
+
+        assertThatThrownBy(() -> utilisateurService.modifier(42L, modification("marie@mail.be")))
+                .isInstanceOf(AdresseInvalideException.class);
+
         verify(utilisateurRepository, never()).save(any(Utilisateur.class));
     }
 }
